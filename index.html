@@ -237,14 +237,32 @@
       const lowerText = text.toLowerCase();
       const learnedList = getLearnedQA();
 
-      // 1. Lệnh XUẤT dữ liệu qua mã Base64
+      // 1. Lệnh XUẤT dữ liệu qua mã Base64 (/export)
       if (lowerText === '/export') {
         const data = JSON.stringify(learnedList);
         const encodedData = btoa(encodeURIComponent(data));
         return `📤 <b>Mã dữ liệu kiến thức:</b><br><textarea class="w-full h-16 bg-slate-100 text-[10px] p-2 rounded border mt-1 font-mono select-all" readonly>${encodedData}</textarea><span class="text-[10px] text-slate-500">Hãy copy toàn bộ mã trên để mang sang máy khác.</span>`;
       }
 
-      // 2. Lệnh TẢI xuống tệp .json
+      // 2. Lệnh NHẬP dữ liệu bằng mã Base64 (/import [mã])
+      if (lowerText.startsWith('/import ')) {
+        try {
+          const encodedData = text.substring(8).trim();
+          const decodedData = decodeURIComponent(atob(encodedData));
+          const parsedData = JSON.parse(decodedData);
+
+          if (Array.isArray(parsedData)) {
+            syncToCloud(parsedData);
+            return `📥 <b>Nhập dữ liệu thành công!</b> Đã cập nhật ${parsedData.length} mục kiến thức vào kho và đồng bộ lên Google Sheets.`;
+          } else {
+            return `⚠️ Mã dữ liệu không đúng định dạng danh sách!`;
+          }
+        } catch (e) {
+          return `❌ Lỗi giải mã dữ liệu! Hãy kiểm tra lại đoạn mã bạn dán vào xem có bị thiếu ký tự không.`;
+        }
+      }
+
+      // 3. Lệnh TẢI xuống tệp .json (/tai hoặc /taikienhoc)
       if (lowerText === '/tai' || lowerText === '/taikienhoc') {
         const data = JSON.stringify(learnedList);
         const blob = new Blob([data], { type: 'application/json' });
@@ -261,13 +279,13 @@
         return `📥 <b>Đã tải file kiến thức thành công!</b> Tệp <code class="text-indigo-600">eduos_kien_thuc.json</code> đã được lưu về thiết bị.`;
       }
 
-      // 3. Khẩu lệnh mở bảng quản lý nhanh
+      // 4. Khẩu lệnh mở bảng quản lý nhanh (/quanly hoặc /ql)
       if (lowerText === '/quanly' || lowerText === '/ql') {
         openQAManager();
         return `🗂️ <b>Đã mở bảng quản lý trực quan!</b> Hãy kiểm tra cửa sổ đang hiển thị trên màn hình để thêm/sửa/xóa câu trả lời và tài liệu.`;
       }
 
-      // 4. Lệnh DẠY nhanh bằng khung chat (/day câu hỏi | câu trả lời)
+      // 5. Lệnh DẠY nhanh bằng khung chat (/day câu hỏi | câu trả lời)
       if (lowerText.startsWith('/day ')) {
         if (localStorage.getItem('edu_learning_locked') === 'true') {
           return `🔒 <b>Tính năng tự học đang bị khóa!</b>`;
@@ -289,7 +307,7 @@
         }
       }
 
-      // 5. Kiểm tra trong kho kiến thức kèm thuật toán GỢI Ý THÔNG MINH khi nhập gần đúng
+      // 6. Kiểm tra trong kho kiến thức kèm thuật toán GỢI Ý THÔNG MINH
       for (let item of learnedList) {
         if (lowerText.includes(item.q) || item.q.includes(lowerText)) {
           let responseHTML = `<p>${item.a}</p>`;
@@ -336,7 +354,7 @@
         return suggestHtml;
       }
 
-      // 6. Mặc định
+      // 7. Mặc định
       return `Hmm, tôi chưa được học về vấn đề này. Hãy gõ lệnh <code class="text-indigo-600">/quanly</code> để thêm kiến thức kèm tệp hoặc dùng lệnh <code class="text-indigo-600">/day</code> nhé!`;
     }
 
