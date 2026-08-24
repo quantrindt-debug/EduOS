@@ -294,7 +294,42 @@
         </div>
       `;
     }
+async function loadDataFromGoogleSheet() {
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYFQVM9W3BZWLbeiubw7BfWXz-mxbiciaX2nxSQ3avDBN5RIEZdsT0hnVAfDelgtpPIA/exec";
+  
+  try {
+    let response = await fetch(WEB_APP_URL);
+    let data = await response.json();
+    console.log("Dữ liệu lấy từ Google Sheet:", data);
+    alert("Tải dữ liệu từ Google Sheet thành công!");
+    // Đổ dữ liệu này vào bảng TKB hoặc danh sách giáo viên của bạn
+  } catch (error) {
+    alert("Lỗi tải dữ liệu: " + error);
+  }
+}
+    async function saveDataToGoogleSheet() {
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwYFQVM9W3BZWLbeiubw7BfWXz-mxbiciaX2nxSQ3avDBN5RIEZdsT0hnVAfDelgtpPIA/exec";
+  
+  // Dữ liệu giả lập danh sách bạn muốn lưu lên sheet
+  let myData = [
+    ["STT", "Họ Tên", "Môn", "Lớp"],
+    [1, "Thầy A", "Toán", "10A1"],
+    [2, "Cô B", "Văn", "10A2"]
+  ];
 
+  try {
+    let response = await fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify(myData)
+    });
+    let result = await response.json();
+    if(result.status === "success") {
+      alert("💾 Đã đồng bộ và lưu dữ liệu lên Google Sheet thành công!");
+    }
+  } catch (error) {
+    alert("Lỗi lưu dữ liệu: " + error);
+  }
+}
     // Tải sẵn dữ liệu mẫu khi mở trang
     window.onload = function() {
       loadSamplePCCM();
