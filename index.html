@@ -7,11 +7,14 @@
   <!-- Tailwind CSS qua CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome icon -->
+  <link rel="manifest" href="manifest.json">
+<!-- Dành riêng cho iOS / Safari để ẩn thanh điều hướng -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="manifest" href="manifest.json">
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
-
   <!-- ================= KHUNG ĐĂNG NHẬP / ĐĂNG KÝ Ở GÓC TRÊN BÊN PHẢI ================= -->
   <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
     <div id="authArea" class="bg-white/90 backdrop-blur-md border border-slate-200 px-4 py-2 rounded-2xl shadow-lg flex items-center gap-3 text-xs">
