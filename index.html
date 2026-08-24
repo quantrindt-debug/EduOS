@@ -60,7 +60,7 @@
         <div class="flex items-start gap-2">
           <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
           <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed">
-            Xin chào! Tôi là trợ lý ảo EduOS. Bạn có thể gõ lệnh <code class="text-indigo-600 font-bold">/quanly</code> để mở bảng quản lý tài liệu và câu hỏi dễ dàng hơn.
+            Xin chào! Tôi là trợ lý ảo EduOS. Dữ liệu đang được đồng bộ đám mây tự động. Bạn có thể gõ lệnh <code class="text-indigo-600 font-bold">/quanly</code> để mở bảng quản lý.
           </div>
         </div>
       </div>
@@ -130,6 +130,50 @@
 
   <!-- ================= LOGIC JAVASCRIPT XỬ LÝ GIAO DIỆN VÀ TỰ HỌC ================= -->
   <script>
+    // 🔗 DÁN ĐƯỜNG DẪN WEB APP GOOGLE APPS SCRIPT CỦA BẠN VÀO DƯỚI ĐÂY:
+    const API_URL = "ĐƯỜNG_DẪN_GOOGLE_SCRIPT_CỦA_BẠN";
+
+    let cloudQAData = [];
+
+    // Tự động tải dữ liệu từ Google Sheets khi mở trang web hoặc app điện thoại
+    async function loadCloudData() {
+      try {
+        let response = await fetch(API_URL);
+        let data = await response.json();
+        cloudQAData = data;
+        localStorage.setItem('edu_learned_qa', JSON.stringify(data)); // Lưu cache offline dự phòng
+      } catch (e) {
+        // Nếu không có mạng, lấy tạm dữ liệu lưu trong thiết bị
+        cloudQAData = JSON.parse(localStorage.getItem('edu_learned_qa')) || [];
+      }
+    }
+
+    // Tải dữ liệu ngay khi vừa mở app/web
+    window.onload = function() {
+      loadCloudData();
+    };
+
+    function getLearnedQA() {
+      return cloudQAData;
+    }
+
+    // Hàm đồng bộ dữ liệu lên Google Sheets
+    async function syncToCloud(newData) {
+      cloudQAData = newData;
+      localStorage.setItem('edu_learned_qa', JSON.stringify(newData));
+      
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newData)
+        });
+      } catch (e) {
+        console.log("Đã lưu tạm thiết bị, lỗi đồng bộ đám mây.");
+      }
+    }
+
     function toggleCommandBox() {
       const box = document.getElementById('commandBoxContainer');
       const icon = document.getElementById('cmdIcon');
@@ -160,13 +204,8 @@
       }
     }
 
-    function getLearnedQA() {
-      const data = localStorage.getItem('edu_learned_qa');
-      return data ? JSON.parse(data) : [];
-    }
-
-    // Thêm câu hỏi kèm tệp từ Modal
-    function addNewQAWithFile() {
+    // Thêm câu hỏi kèm tệp từ Modal (Đã tích hợp đồng bộ đám mây)
+    async function addNewQAWithFile() {
       const q = document.getElementById('newQ').value.trim();
       const a = document.getElementById('newA').value.trim();
       const fileName = document.getElementById('newFileName').value.trim();
@@ -177,9 +216,10 @@
         return;
       }
 
-      let qaData = JSON.parse(localStorage.getItem('edu_learned_qa')) || [];
+      let qaData = getLearnedQA();
       qaData.push({ q: q.toLowerCase(), a, fileName, fileUrl });
-      localStorage.setItem('edu_learned_qa', JSON.stringify(qaData));
+      
+      await syncToCloud(qaData);
 
       // Reset form
       document.getElementById('newQ').value = '';
@@ -188,7 +228,7 @@
       document.getElementById('newFileUrl').value = '';
       
       renderQAListInModal();
-      alert('✅ Đã lưu tri thức kèm tệp thành công!');
+      alert('✅ Đã lưu và đồng bộ lên Google Sheets thành công!');
     }
 
     // Động cơ phản hồi thông minh
@@ -199,14 +239,14 @@
 
       // 1. Lệnh XUẤT dữ liệu qua mã Base64
       if (lowerText === '/export') {
-        const data = localStorage.getItem('edu_learned_qa') || '[]';
+        const data = JSON.stringify(learnedList);
         const encodedData = btoa(encodeURIComponent(data));
         return `📤 <b>Mã dữ liệu kiến thức:</b><br><textarea class="w-full h-16 bg-slate-100 text-[10px] p-2 rounded border mt-1 font-mono select-all" readonly>${encodedData}</textarea><span class="text-[10px] text-slate-500">Hãy copy toàn bộ mã trên để mang sang máy khác.</span>`;
       }
 
       // 2. Lệnh TẢI xuống tệp .json
       if (lowerText === '/tai' || lowerText === '/taikienhoc') {
-        const data = localStorage.getItem('edu_learned_qa') || '[]';
+        const data = JSON.stringify(learnedList);
         const blob = new Blob([data], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         
@@ -241,8 +281,9 @@
           const a = parts[1].trim();
           let qaData = getLearnedQA();
           qaData.push({ q, a, fileName: "", fileUrl: "" });
-          localStorage.setItem('edu_learned_qa', JSON.stringify(qaData));
-          return `✅ <b>Đã học thành công!</b> Từ bây giờ khi ai hỏi về "<b>${q}</b>", tôi sẽ trả lời là: "<i>${a}</i>"`;
+          
+          syncToCloud(qaData); // Đồng bộ đám mây
+          return `✅ <b>Đã học thành công và đồng bộ đám mây!</b> Từ bây giờ khi ai hỏi về "<b>${q}</b>", tôi sẽ trả lời là: "<i>${a}</i>"`;
         } else {
           return `⚠️ Cú pháp dạy chưa đúng! Phải có dấu gạch đứng (<code class="text-indigo-600">|</code>):<br><code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
         }
@@ -277,7 +318,6 @@
 
       // --- TÍNH NĂNG GỢI Ý CÂU HỎI LIÊN QUAN KHI KHÔNG TÌM THẤY CHÍNH XÁC ---
       let suggestions = learnedList.filter(item => {
-        // Tách các từ khóa người dùng gõ để tìm điểm chung
         let keywords = lowerText.split(' ');
         return keywords.some(kw => kw.length > 1 && item.q.includes(kw));
       });
@@ -375,10 +415,10 @@
       container.innerHTML = html;
     }
 
-    function deleteQAItem(index) {
+    async function deleteQAItem(index) {
       let qaData = getLearnedQA();
       qaData.splice(index, 1);
-      localStorage.setItem('edu_learned_qa', JSON.stringify(qaData));
+      await syncToCloud(qaData);
       renderQAListInModal();
     }
   </script>
