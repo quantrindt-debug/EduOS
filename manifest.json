@@ -1,6 +1,6 @@
 {
-  "name": "Trợ lý ảo EduOS",
-  "short_name": " Trợ lý ảo EduOS",
+  "name": "KienoraAI",
+  "short_name": " KienoraAI",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
