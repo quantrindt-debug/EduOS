@@ -95,7 +95,25 @@
       </div>
 
       <!-- Nội dung bảng danh sách câu hỏi / tệp -->
-      <div class="flex-1 overflow-y-auto py-4 space-y-3">
+      <div class="flex-1 overflow-y-auto py-4 space-y-4">
+        
+        <!-- KHU VỰC SAO LƯU & PHỤC HỒI DỮ LIỆU NHANH (GIAO DIỆN MỚI TRỰC QUAN) -->
+        <div class="bg-indigo-50 border border-indigo-100 p-3.5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold text-indigo-900"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Sao lưu & Phục hồi dữ liệu:</p>
+            <p class="text-[10px] text-indigo-700">Tải file cấu hình về máy hoặc chọn file để khôi phục nhanh.</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="exportJsonFile()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow flex items-center gap-1.5">
+              <i class="fa-solid fa-download"></i> Tải file .JSON
+            </button>
+            <label class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition shadow flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-upload"></i> Nhập file .JSON
+              <input type="file" id="importFileObj" accept=".json" class="hidden" onchange="importJsonFile(event)">
+            </label>
+          </div>
+        </div>
+
         <!-- Thêm tri thức mới kèm tệp tải về -->
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
           <p class="text-[11px] font-bold text-slate-600 uppercase">Thêm tri thức & tệp tải về mới:</p>
@@ -131,7 +149,7 @@
   <!-- ================= LOGIC JAVASCRIPT XỬ LÝ GIAO DIỆN VÀ TỰ HỌC ================= -->
   <script>
     // 🔗 DÁN ĐƯỜNG DẪN WEB APP GOOGLE APPS SCRIPT CỦA BẠN VÀO DƯỚI ĐÂY:
-    const API_URL = "https://script.google.com/macros/s/AKfycbyI1-e7CthYOcTdZcuqZxG3QfgIejdi2l5ntM7o-aynAAFnV3MUmpdhyFFhuZ8IRH6L/exec";
+    const API_URL = "ĐƯỜNG_DẪN_GOOGLE_SCRIPT_CỦA_BẠN";
 
     let cloudQAData = [];
 
@@ -140,15 +158,15 @@
       try {
         let response = await fetch(API_URL);
         let data = await response.json();
-        cloudQAData = data;
-        localStorage.setItem('edu_learned_qa', JSON.stringify(data)); // Lưu cache offline dự phòng
+        if (Array.isArray(data)) {
+          cloudQAData = data;
+          localStorage.setItem('edu_learned_qa', JSON.stringify(data));
+        }
       } catch (e) {
-        // Nếu không có mạng, lấy tạm dữ liệu lưu trong thiết bị
         cloudQAData = JSON.parse(localStorage.getItem('edu_learned_qa')) || [];
       }
     }
 
-    // Tải dữ liệu ngay khi vừa mở app/web
     window.onload = function() {
       loadCloudData();
     };
@@ -157,7 +175,6 @@
       return cloudQAData;
     }
 
-    // Hàm đồng bộ dữ liệu lên Google Sheets
     async function syncToCloud(newData) {
       cloudQAData = newData;
       localStorage.setItem('edu_learned_qa', JSON.stringify(newData));
@@ -204,7 +221,6 @@
       }
     }
 
-    // Thêm câu hỏi kèm tệp từ Modal (Đã tích hợp đồng bộ đám mây)
     async function addNewQAWithFile() {
       const q = document.getElementById('newQ').value.trim();
       const a = document.getElementById('newA').value.trim();
@@ -221,7 +237,6 @@
       
       await syncToCloud(qaData);
 
-      // Reset form
       document.getElementById('newQ').value = '';
       document.getElementById('newA').value = '';
       document.getElementById('newFileName').value = '';
@@ -231,66 +246,65 @@
       alert('✅ Đã lưu và đồng bộ lên Google Sheets thành công!');
     }
 
+    // Tải tệp JSON trực tiếp
+    function exportJsonFile() {
+      const data = JSON.stringify(getLearnedQA(), null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'eduos_kien_thuc.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Nhập tệp JSON trực tiếp bằng nút bấm chọn file
+    function importJsonFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const parsedData = JSON.parse(e.target.result);
+          if (Array.isArray(parsedData)) {
+            await syncToCloud(parsedData);
+            renderQAListInModal();
+            alert(`📥 Nhập file thành công! Đã cập nhật ${parsedData.length} mục kiến thức và đồng bộ lên Google Sheets.`);
+          } else {
+            alert('⚠️ Cấu trúc tệp JSON không hợp lệ!');
+          }
+        } catch (err) {
+          alert('❌ Lỗi đọc tệp JSON! File không đúng định dạng.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = ''; // Reset input file
+    }
+
     // Động cơ phản hồi thông minh
     function generateAIResponse(userInput) {
       const text = userInput.trim();
       const lowerText = text.toLowerCase();
       const learnedList = getLearnedQA();
 
-      // 1. Lệnh XUẤT dữ liệu qua mã Base64 (/export)
-      if (lowerText === '/export') {
-        const data = JSON.stringify(learnedList);
-        const encodedData = btoa(encodeURIComponent(data));
-        return `📤 <b>Mã dữ liệu kiến thức:</b><br><textarea class="w-full h-16 bg-slate-100 text-[10px] p-2 rounded border mt-1 font-mono select-all" readonly>${encodedData}</textarea><span class="text-[10px] text-slate-500">Hãy copy toàn bộ mã trên để mang sang máy khác.</span>`;
-      }
-
-      // 2. Lệnh NHẬP dữ liệu bằng mã Base64 (/import [mã])
-      if (lowerText.startsWith('/import ')) {
-        try {
-          const encodedData = text.substring(8).trim();
-          const decodedData = decodeURIComponent(atob(encodedData));
-          const parsedData = JSON.parse(decodedData);
-
-          if (Array.isArray(parsedData)) {
-            syncToCloud(parsedData);
-            return `📥 <b>Nhập dữ liệu thành công!</b> Đã cập nhật ${parsedData.length} mục kiến thức vào kho và đồng bộ lên Google Sheets.`;
-          } else {
-            return `⚠️ Mã dữ liệu không đúng định dạng danh sách!`;
-          }
-        } catch (e) {
-          return `❌ Lỗi giải mã dữ liệu! Hãy kiểm tra lại đoạn mã bạn dán vào xem có bị thiếu ký tự không.`;
-        }
-      }
-
-      // 3. Lệnh TẢI xuống tệp .json (/tai hoặc /taikienhoc)
+      // 1. Lệnh TẢI xuống nhanh (/tai hoặc /taikienhoc)
       if (lowerText === '/tai' || lowerText === '/taikienhoc') {
-        const data = JSON.stringify(learnedList);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'eduos_kien_thuc.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        return `📥 <b>Đã tải file kiến thức thành công!</b> Tệp <code class="text-indigo-600">eduos_kien_thuc.json</code> đã được lưu về thiết bị.`;
+        exportJsonFile();
+        return `📥 <b>Đã kích hoạt tải file kiến thức!</b> Tệp <code class="text-indigo-600">eduos_kien_thuc.json</code> đã được lưu về thiết bị của bạn.`;
       }
 
-      // 4. Khẩu lệnh mở bảng quản lý nhanh (/quanly hoặc /ql)
+      // 2. Khẩu lệnh mở bảng quản lý nhanh (/quanly hoặc /ql)
       if (lowerText === '/quanly' || lowerText === '/ql') {
         openQAManager();
-        return `🗂️ <b>Đã mở bảng quản lý trực quan!</b> Hãy kiểm tra cửa sổ đang hiển thị trên màn hình để thêm/sửa/xóa câu trả lời và tài liệu.`;
+        return `🗂️ <b>Đã mở bảng quản lý trực quan!</b> Tại đây bạn có thể bấm nút Tải xuống hoặc Nhập file .JSON trực tiếp rất dễ dàng.`;
       }
 
-      // 5. Lệnh DẠY nhanh bằng khung chat (/day câu hỏi | câu trả lời)
+      // 3. Lệnh DẠY nhanh bằng khung chat (/day câu hỏi | câu trả lời)
       if (lowerText.startsWith('/day ')) {
-        if (localStorage.getItem('edu_learning_locked') === 'true') {
-          return `🔒 <b>Tính năng tự học đang bị khóa!</b>`;
-        }
-
         let content = text.substring(5).trim();
         const parts = content.split('|');
         
@@ -300,14 +314,14 @@
           let qaData = getLearnedQA();
           qaData.push({ q, a, fileName: "", fileUrl: "" });
           
-          syncToCloud(qaData); // Đồng bộ đám mây
+          syncToCloud(qaData);
           return `✅ <b>Đã học thành công và đồng bộ đám mây!</b> Từ bây giờ khi ai hỏi về "<b>${q}</b>", tôi sẽ trả lời là: "<i>${a}</i>"`;
         } else {
           return `⚠️ Cú pháp dạy chưa đúng! Phải có dấu gạch đứng (<code class="text-indigo-600">|</code>):<br><code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
         }
       }
 
-      // 6. Kiểm tra trong kho kiến thức kèm thuật toán GỢI Ý THÔNG MINH
+      // 4. Kiểm tra trong kho kiến thức kèm thuật toán GỢI Ý THÔNG MINH
       for (let item of learnedList) {
         if (lowerText.includes(item.q) || item.q.includes(lowerText)) {
           let responseHTML = `<p>${item.a}</p>`;
@@ -334,7 +348,7 @@
         }
       }
 
-      // --- TÍNH NĂNG GỢI Ý CÂU HỎI LIÊN QUAN KHI KHÔNG TÌM THẤY CHÍNH XÁC ---
+      // Gợi ý câu hỏi gần đúng
       let suggestions = learnedList.filter(item => {
         let keywords = lowerText.split(' ');
         return keywords.some(kw => kw.length > 1 && item.q.includes(kw));
@@ -342,7 +356,7 @@
 
       if (suggestions.length > 0) {
         let suggestHtml = `Hmm, có phải ý bạn là một trong số các câu hỏi sau không?<br><div class="mt-2 space-y-1.5">`;
-        suggestions.slice(0, 3).forEach((sug, idx) => {
+        suggestions.slice(0, 3).forEach((sug) => {
           suggestHtml += `
             <div onclick="document.getElementById('cmdInput').value='${sug.q}'; executeUserCommand();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-xl text-xs cursor-pointer transition font-medium flex items-center justify-between">
               <span><i class="fa-solid fa-circle-question mr-1.5 text-indigo-500"></i> ${sug.q}</span>
@@ -354,7 +368,6 @@
         return suggestHtml;
       }
 
-      // 7. Mặc định
       return `Hmm, tôi chưa được học về vấn đề này. Hãy gõ lệnh <code class="text-indigo-600">/quanly</code> để thêm kiến thức kèm tệp hoặc dùng lệnh <code class="text-indigo-600">/day</code> nhé!`;
     }
 
@@ -396,7 +409,6 @@
       return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // Các hàm quản lý Modal
     function openQAManager() {
       document.getElementById('qaManagerModal').classList.remove('hidden');
       renderQAListInModal();
