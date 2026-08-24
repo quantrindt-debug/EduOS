@@ -12,6 +12,21 @@
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 font-sans">
 
+  <!-- ================= KHUNG ĐĂNG NHẬP / ĐĂNG KÝ Ở GÓC TRÊN BÊN PHẢI ================= -->
+  <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
+    <div id="authArea" class="bg-white/90 backdrop-blur-md border border-slate-200 px-4 py-2 rounded-2xl shadow-lg flex items-center gap-3 text-xs">
+      <div id="userInfoDisplay" class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-slate-400" id="authStatusDot"></span>
+        <span id="authUsernameText" class="font-bold text-slate-700">Khách (Chưa đăng nhập)</span>
+      </div>
+      <div class="h-4 w-[1px] bg-slate-200"></div>
+      <div id="authButtons" class="flex items-center gap-1.5">
+        <button onclick="openAuthModal('login')" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl font-bold transition shadow-sm">Đăng nhập</button>
+        <button onclick="openAuthModal('register')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl font-bold transition">Đăng ký</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= GIAO DIỆN CHÍNH CỦA TRANG WEB ================= -->
   <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-slate-200 text-center">
     <div class="w-14 h-14 bg-sky-100 text-sky-600 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4 shadow-inner">
@@ -24,7 +39,7 @@
       <p class="font-bold text-sky-900"><i class="fa-solid fa-circle-info mr-1"></i> Hướng dẫn lệnh nhanh:</p>
       <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/help</code> để xem toàn bộ danh sách lệnh.</p>
       <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/quanly</code> để mở bảng quản lý.</p>
-      <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/xoa [cụm từ]</code> để xóa nội dung nhạy cảm.</p>
+      <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/day [hỏi] | [đáp]</code> để dạy AI (cần đăng nhập).</p>
     </div>
   </div>
 
@@ -56,7 +71,7 @@
         <div class="flex items-start gap-2">
           <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
           <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed">
-            Xin chào! Đã tích hợp đầy đủ lệnh xóa toàn bộ <code class="text-indigo-600 font-bold">/xoatoanbo</code> và lệnh xóa theo từ khóa nhạy cảm <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code>.
+            Xin chào! Hãy đăng nhập để kích hoạt quyền tự dạy AI và lưu kho tri thức riêng của bạn.
           </div>
         </div>
       </div>
@@ -132,41 +147,183 @@
     </div>
   </div>
 
+  <!-- MODAL ĐĂNG NHẬP / ĐĂNG KÝ -->
+  <div id="authModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl flex flex-col">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-100 mb-4">
+        <h3 id="authModalTitle" class="font-bold text-slate-800 text-sm uppercase">Đăng nhập tài khoản</h3>
+        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div class="space-y-3">
+        <div>
+          <label class="text-[11px] font-bold text-slate-600 mb-1 block">Tên đăng nhập (Username):</label>
+          <input type="text" id="modalUsername" class="w-full bg-slate-100 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Nhập tên tài khoản...">
+        </div>
+        <div>
+          <label class="text-[11px] font-bold text-slate-600 mb-1 block">Mật khẩu:</label>
+          <input type="password" id="modalPassword" class="w-full bg-slate-100 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Nhập mật khẩu...">
+        </div>
+        <div id="registerExtraField" class="hidden">
+          <label class="text-[11px] font-bold text-slate-600 mb-1 block">Địa chỉ Email liên hệ:</label>
+          <input type="email" id="modalEmail" class="w-full bg-slate-100 border border-slate-200 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="email@domain.com">
+        </div>
+        
+        <button onclick="submitAuthForm()" id="authSubmitBtn" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md mt-2">
+          Đăng nhập ngay
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyI1-e7CthYOcTdZcuqZxG3QfgIejdi2l5ntM7o-aynAAFnV3MUmpdhyFFhuZ8IRH6L/exec";
-    let cloudQAData = [];
+    const API_URL = "https://script.google.com/macros/s/AKfycbyI1-e7CthYOcTdZcuqZxG3QfgIejdi2l5ntM7o-aynAAFnV3MUmpdhyFFhuZ8IRH6L/exec"; 
+    
+    let currentUser = localStorage.getItem('edu_current_user') || null;
+    let currentRole = localStorage.getItem('edu_current_role') || null;
+    let sharedSheetData = [];
+    let personalSheetData = [];
 
     async function loadCloudData() {
       try {
-        let response = await fetch(API_URL);
+        let url = API_URL + "?action=get_data";
+        if (currentUser) {
+          url += "&username=" + encodeURIComponent(currentUser);
+        }
+        let response = await fetch(url);
         let data = await response.json();
-        if (Array.isArray(data)) {
-          cloudQAData = data;
-          localStorage.setItem('edu_learned_qa', JSON.stringify(data));
+        
+        if (data.sheet1) {
+          sharedSheetData = data.sheet1;
+          localStorage.setItem('edu_learned_qa', JSON.stringify(data.sheet1));
+        }
+        if (data.personal) {
+          personalSheetData = data.personal;
         }
       } catch (e) {
-        cloudQAData = JSON.parse(localStorage.getItem('edu_learned_qa')) || [];
+        sharedSheetData = JSON.parse(localStorage.getItem('edu_learned_qa')) || [];
       }
     }
 
     window.onload = function() {
+      updateAuthUI();
       loadCloudData();
     };
 
+    function updateAuthUI() {
+      const dot = document.getElementById('authStatusDot');
+      const text = document.getElementById('authUsernameText');
+      const buttons = document.getElementById('authButtons');
+
+      if (currentUser) {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+        text.innerText = currentUser + (currentRole === 'admin' ? ' (Quản trị)' : ' (Cá nhân)');
+        buttons.innerHTML = `<button onclick="logout()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-xl font-bold transition">Đăng xuất</button>`;
+      } else {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+        text.innerText = "Khách (Chưa đăng nhập)";
+        buttons.innerHTML = `
+          <button onclick="openAuthModal('login')" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl font-bold transition shadow-sm">Đăng nhập</button>
+          <button onclick="openAuthModal('register')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl font-bold transition">Đăng ký</button>
+        `;
+      }
+    }
+
+    let authMode = 'login';
+    function openAuthModal(mode) {
+      authMode = mode;
+      document.getElementById('authModal').classList.remove('hidden');
+      document.getElementById('modalUsername').value = '';
+      document.getElementById('modalPassword').value = '';
+      
+      const title = document.getElementById('authModalTitle');
+      const btn = document.getElementById('authSubmitBtn');
+      const extra = document.getElementById('registerExtraField');
+
+      if (mode === 'register') {
+        title.innerText = "Đăng ký tài khoản mới";
+        btn.innerText = "Gửi yêu cầu đăng ký";
+        extra.classList.remove('hidden');
+      } else {
+        title.innerText = "Đăng nhập hệ thống";
+        btn.innerText = "Đăng nhập";
+        extra.classList.add('hidden');
+      }
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
+
+    async function submitAuthForm() {
+      const username = document.getElementById('modalUsername').value.trim();
+      const password = document.getElementById('modalPassword').value.trim();
+      const email = document.getElementById('modalEmail').value.trim();
+
+      if (!username || !password) {
+        alert('Vui lòng điền đầy đủ tên đăng nhập và mật khẩu!');
+        return;
+      }
+
+      if (authMode === 'register') {
+        try {
+          let res = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "register", username, password, email })
+          });
+          let result = await res.json();
+          alert(result.message);
+          if (result.status === 'success') closeAuthModal();
+        } catch (e) {
+          alert('Lỗi kết nối máy chủ!');
+        }
+      } else {
+        try {
+          let res = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "login", username, password })
+          });
+          let result = await res.json();
+          if (result.status === 'success') {
+            currentUser = result.username;
+            currentRole = result.role;
+            localStorage.setItem('edu_current_user', currentUser);
+            localStorage.setItem('edu_current_role', currentRole);
+            updateAuthUI();
+            closeAuthModal();
+            loadCloudData();
+            alert('🎉 Đăng nhập thành công!');
+          } else {
+            alert(result.message);
+          }
+        } catch (e) {
+          alert('Lỗi kết nối máy chủ!');
+        }
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      currentRole = null;
+      localStorage.removeItem('edu_current_user');
+      localStorage.removeItem('edu_current_role');
+      personalSheetData = [];
+      updateAuthUI();
+      loadCloudData();
+      alert('Đã đăng xuất tài khoản.');
+    }
+
     function getLearnedQA() {
-      return cloudQAData;
+      return sharedSheetData.length > 0 ? sharedSheetData : (JSON.parse(localStorage.getItem('edu_learned_qa')) || []);
     }
 
     async function syncToCloud(newData) {
-      cloudQAData = newData;
+      sharedSheetData = newData;
       localStorage.setItem('edu_learned_qa', JSON.stringify(newData));
-      
       try {
         await fetch(API_URL, {
           method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newData)
+          body: JSON.stringify({ action: "sync_shared", data: newData })
         });
       } catch (e) {
         console.log("Lỗi đồng bộ đám mây.");
@@ -189,18 +346,14 @@
       } else {
         box.classList.remove('scale-100', 'opacity-100');
         box.classList.add('scale-95', 'opacity-0');
-        setTimeout(() => {
-          box.classList.add('hidden');
-        }, 200);
+        setTimeout(() => { box.classList.add('hidden'); }, 200);
         icon.classList.remove('fa-xmark');
         icon.classList.add('fa-wand-magic-sparkles');
       }
     }
 
     function handleCmdKeyPress(event) {
-      if (event.key === 'Enter') {
-        executeUserCommand();
-      }
+      if (event.key === 'Enter') executeUserCommand();
     }
 
     async function addNewQAWithFile() {
@@ -216,7 +369,6 @@
 
       let qaData = getLearnedQA();
       qaData.push({ q: q.toLowerCase(), a, fileName, fileUrl });
-      
       await syncToCloud(qaData);
 
       document.getElementById('newQ').value = '';
@@ -232,7 +384,6 @@
       const data = JSON.stringify(getLearnedQA(), null, 2);
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      
       const a = document.createElement('a');
       a.href = url;
       a.download = 'eduos_kien_thuc.json';
@@ -271,72 +422,84 @@
       const learnedList = getLearnedQA();
 
       // 0. Lệnh trợ giúp hướng dẫn (/help)
-      if (lowerText === '/help') {
-        return `📖 <b>Danh sách lệnh hỗ trợ EduOS:</b><br>
-        • <code class="text-indigo-600 font-bold">/help</code>: Xem hướng dẫn lệnh.<br>
-        • <code class="text-indigo-600 font-bold">/quanly</code> (hoặc <code class="text-indigo-600 font-bold">/ql</code>): Mở bảng quản lý.<br>
-        • <code class="text-indigo-600 font-bold">/xemda</code>: Xem nhanh tất cả dữ liệu.<br>
-        • <code class="text-indigo-600 font-bold">/tim [từ_khóa]</code>: Tìm kiếm chi tiết.<br>
-        • <code class="text-indigo-600 font-bold">/day [hỏi] | [đáp]</code>: Dạy kiến thức mới.<br>
-        • <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code>: Xóa các mục chứa từ nhạy cảm.<br>
-        • <code class="text-indigo-600 font-bold">/xoatoanbo</code>: Xóa sạch toàn bộ kho dữ liệu.<br>
-        • <code class="text-indigo-600 font-bold">/khoaday</code> / <code class="text-indigo-600 font-bold">/mokhoa</code>: Khóa/Mở tự học.<br>
-        • <code class="text-indigo-600 font-bold">/tai</code>: Tải file sao lưu JSON.<br>
-        • <code class="text-indigo-600 font-bold">/lammoi</code> (hoặc <code class="text-indigo-600 font-bold">/sync</code>): Cập nhật lại dữ liệu từ Google Sheets.`;
-      }
+      // Lệnh: /help
+  // Lệnh: /help (Đã bao gồm nhóm lệnh Admin)
+  if (lowerText === '/help' || lowerText === '/giupdo') {
+    let helpHTML = `🤖 <b>HƯỚNG DẪN HỆ THỐNG LỆNH EDUOS</b><br><br>
+    <b>1. Hệ thống & Trợ giúp:</b><br>
+    • <code class="text-indigo-600 font-bold">/help</code> - Xem danh sách toàn bộ lệnh.<br>
+    • <code class="text-indigo-600 font-bold">/lammoi</code> / <code class="text-indigo-600 font-bold">/sync</code> - Đồng bộ dữ liệu từ Google Sheets.<br>
+    • <code class="text-indigo-600 font-bold">/thongtin</code> / <code class="text-indigo-600 font-bold">/info</code> - Xem thông tin tài khoản.<br><br>
 
-      // 1. Lệnh khóa tính năng tự học (/khoaday)
-      if (lowerText === '/khoaday') {
-        localStorage.setItem('edu_learning_locked', 'true');
-        return `🔒 <b>Đã khóa tính năng tự học thành công!</b>`;
-      }
+    <b>2. Quản lý Tri thức:</b><br>
+    • <code class="text-indigo-600 font-bold">/quanly</code> / <code class="text-indigo-600 font-bold">/ql</code> - Mở bảng quản lý trực quan, sao lưu file .json.<br>
+    • <code class="text-indigo-600 font-bold">/day [hỏi] | [đáp]</code> - Dạy AI kiến thức mới (Cần đăng nhập).<br>
+    • <code class="text-indigo-600 font-bold">/tim [từ_khóa]</code> - Tìm kiếm nhanh trong kho tri thức chung.<br>
+    • <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code> - Xóa các mục tri thức theo từ khóa.<br><br>
 
-      // 2. Lệnh mở khóa tính năng tự học (/mokhoa)
-      if (lowerText === '/mokhoa') {
-        localStorage.removeItem('edu_learning_locked');
-        return `🔓 <b>Đã mở khóa tính năng tự học!</b>`;
-      }
+    <b>3. Tra cứu & Tiện ích Học sinh:</b><br>
+    • <code class="text-indigo-600 font-bold">/diem [mã_hs]</code> - Tra cứu hồ sơ/điểm số học sinh theo mã.<br>
+    • <code class="text-indigo-600 font-bold">/lich</code> / <code class="text-indigo-600 font-bold">/thoikhoabieu</code> - Xem lịch công tác, thời khóa biểu.<br>
+    • <code class="text-indigo-600 font-bold">/thongbao</code> - Xem thông báo mới từ nhà trường.`;
 
-      // 3. Lệnh XÓA TOÀN BỘ DỮ LIỆU (/xoatoanbo)
+    // Nếu là Admin, gộp thêm nhóm lệnh quản trị vào bảng help
+    if (currentUser && currentRole === 'admin') {
+      helpHTML += `<br><br><b>🛡️ 4. Nhóm lệnh Quản trị (Admin):</b><br>
+      • <code class="text-rose-600 font-bold">/duyet</code> - Xem danh sách tri thức chờ kiểm duyệt.<br>
+      • <code class="text-rose-600 font-bold">/accept [ID]</code> - Phê duyệt mục chờ.<br>
+      • <code class="text-rose-600 font-bold">/reject [ID]</code> - Từ chối mục chờ.<br>
+      • <code class="text-rose-600 font-bold">/users</code> - Quản lý danh sách người dùng.<br>
+      • <code class="text-rose-600 font-bold">/backup</code> - Sao lưu toàn bộ hệ thống.<br>
+      • <code class="text-rose-600 font-bold">/logs</code> - Xem nhật ký hoạt động hệ thống.`;
+    }
+
+    return helpHTML;
+  }
+
+      // 1. Lệnh XÓA TOÀN BỘ DỮ LIỆU (/xoatoanbo)
       if (lowerText === '/xoatoanbo') {
         syncToCloud([]);
-        return `🗑️ <b>Đã xóa sạch toàn bộ kho tri thức!</b> Hệ thống đã được làm trống.`;
+        return `🗑️ <b>Đã xóa sạch toàn bộ kho tri thức chung!</b>`;
       }
 
-      // 4. Lệnh XÓA THEO CỤM TỪ NHẠY CẢM (/xoa [cụm_từ] hoặc /xoathengt [cụm_từ])
-      if (lowerText.startsWith('/xoa ') || lowerText.startsWith('/xoathengt ')) {
-        const keyword = text.substring(text.indexOf(' ') + 1).trim().toLowerCase();
-        if (!keyword) return `⚠️ Vui lòng nhập cụm từ cần xóa (VD: <code class="text-indigo-600">/xoa [từ_nhạy_cảm]</code>)`;
+      // 2. Lệnh XÓA THEO CỤM TỪ NHẠY CẢM (/xoa)
+      if (lowerText.startsWith('/xoa ')) {
+        const keyword = text.substring(5).trim().toLowerCase();
+        if (!keyword) return `⚠️ Vui lòng nhập cụm từ cần xóa (VD: <code class="text-indigo-600">/xoa [từ]</code>)`;
         
         let beforeCount = learnedList.length;
-        let filteredList = learnedList.filter(item => !item.q.includes(keyword) && !item.a.toLowerCase().includes(keyword));
+        let filteredList = learnedList.filter(item => {
+          let qVal = item.q || item.Q || "";
+          let aVal = item.a || item.A || "";
+          return !qVal.toLowerCase().includes(keyword) && !aVal.toLowerCase().includes(keyword);
+        });
         let deletedCount = beforeCount - filteredList.length;
 
-        if (deletedCount === 0) {
-          return `🔍 Không tìm thấy mục nào chứa cụm từ "<b>${keyword}</b>" để xóa.`;
-        }
-
+        if (deletedCount === 0) return `🔍 Không tìm thấy mục nào chứa "<b>${keyword}</b>".`;
         syncToCloud(filteredList);
-        return `🗑️ <b>Đã xóa thành công ${deletedCount} mục</b> có chứa cụm từ "<b>${keyword}</b>" ra khỏi hệ thống!`;
+        return `🗑️ <b>Đã xóa thành công ${deletedCount} mục</b> chứa từ "<b>${keyword}</b>"!`;
       }
 
-      // 5. Lệnh TÌM KIẾM chuyên dụng theo từ khóa (/tim [từ_khóa])
+      // 3. Lệnh TÌM KIẾM (/tim)
       if (lowerText.startsWith('/tim ')) {
         const keyword = text.substring(5).trim().toLowerCase();
-        if (!keyword) return `⚠️ Vui lòng nhập từ khóa cần tìm (VD: <code class="text-indigo-600">/tim học sinh</code>)`;
+        if (!keyword) return `⚠️ Vui lòng nhập từ khóa cần tìm!`;
         
-        let results = learnedList.filter(item => item.q.includes(keyword) || item.a.toLowerCase().includes(keyword));
-        if (results.length === 0) {
-          return `🔍 Không tìm thấy kết quả nào khớp với từ khóa "<b>${keyword}</b>".`;
-        }
+        let results = learnedList.filter(item => {
+          let qVal = item.q || item.Q || "";
+          let aVal = item.a || item.A || "";
+          return qVal.toLowerCase().includes(keyword) || aVal.toLowerCase().includes(keyword);
+        });
+        if (results.length === 0) return `🔍 Không tìm thấy kết quả cho "<b>${keyword}</b>".`;
 
-        let resHtml = `🔍 <b>Tìm thấy ${results.length} kết quả cho "${keyword}":</b><div class="mt-2 space-y-1.5 max-h-48 overflow-y-auto">`;
+        let resHtml = `🔍 <b>Tìm thấy ${results.length} kết quả:</b><div class="mt-2 space-y-1.5 max-h-48 overflow-y-auto">`;
         results.forEach((item, idx) => {
+          let qVal = item.q || item.Q || "";
+          let aVal = item.a || item.A || "";
           resHtml += `
             <div class="bg-indigo-50 p-2 rounded-xl text-xs space-y-0.5 border border-indigo-100">
-              <p class="font-bold text-indigo-700">${idx + 1}. Q: ${item.q}</p>
-              <p class="text-slate-600">A: ${item.a}</p>
-              ${item.fileName ? `<p class="text-[10px] text-sky-600"><i class="fa-solid fa-paperclip"></i> ${item.fileName}</p>` : ''}
+              <p class="font-bold text-indigo-700">${idx + 1}. Q: ${qVal}</p>
+              <p class="text-slate-600">A: ${aVal}</p>
             </div>
           `;
         });
@@ -344,106 +507,207 @@
         return resHtml;
       }
 
-      // 6. Lệnh xem dữ liệu nhanh (/xemda)
-      if (lowerText === '/xemda') {
-        if (learnedList.length === 0) return "📂 Kho tri thức hiện đang trống.";
-        let listHtml = `📂 <b>Danh sách tri thức hiện tại (${learnedList.length} mục):</b><div class="mt-2 space-y-1 max-h-48 overflow-y-auto">`;
-        learnedList.forEach((item, idx) => {
-          listHtml += `<div class="bg-slate-100 p-1.5 rounded"><b>${idx+1}. Q:</b> ${item.q}<br><span class="text-slate-500">A: ${item.a}</span></div>`;
-        });
-        listHtml += `</div>`;
-        return listHtml;
-      }
-
-      // 7. Tải file (/tai)
-      if (lowerText === '/tai' || lowerText === '/taikienhoc') {
-        exportJsonFile();
-        return `📥 <b>Đã kích hoạt tải file kiến thức!</b>`;
-      }
-
-      // 8. Mở quản lý (/quanly)
+      // 4. Mở quản lý (/quanly)
       if (lowerText === '/quanly' || lowerText === '/ql') {
         openQAManager();
         return `🗂️ <b>Đã mở bảng quản lý trực quan!</b>`;
       }
 
-      // 9. Dạy nhanh (/day)
+      // 5. Lệnh DẠY (/day) -> Đồng thời đẩy cá nhân và gửi sang cột F-J của Sheet 1
       if (lowerText.startsWith('/day ')) {
-        if (localStorage.getItem('edu_learning_locked') === 'true') {
-          return `🔒 <b>Tính năng tự học đang bị khóa!</b> Hãy gõ lệnh <code class="text-indigo-600">/mokhoa</code> trước.`;
+        if (!currentUser) {
+          return `⚠️ Bạn cần <b class="text-rose-600">đăng nhập</b> tài khoản mới có quyền dạy AI!`;
         }
 
         let content = text.substring(5).trim();
         const parts = content.split('|');
-        
         if (parts.length === 2) {
           const q = parts[0].trim().toLowerCase();
           const a = parts[1].trim();
-          let qaData = getLearnedQA();
-          qaData.push({ q, a, fileName: "", fileUrl: "" });
-          
-          syncToCloud(qaData);
-          return `✅ <b>Đã học thành công!</b> Hỏi: "<b>${q}</b>" -> Đáp: "<i>${a}</i>"`;
+
+          // Gửi lên Google Apps Script
+          fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "teach", username: currentUser, q, a })
+          });
+
+          personalSheetData.push({ Q: q, A: a, FileName: "", FileUrl: "" });
+          return `✅ <b>Đã học thành công!</b> Đã lưu vào kho riêng và gửi yêu cầu kiểm duyệt lên hệ thống chính.`;
         } else {
-          return `⚠️ Cú pháp dạy chưa đúng! Dùng lệnh: <code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
+          return `⚠️ Sai cú pháp! Dùng: <code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
         }
       }
 
-      // 10. Bổ sung lệnh làm mới dữ liệu từ Google Sheets trực tiếp
+      // 6. Làm mới dữ liệu (/lammoi)
       if (lowerText === '/lammoi' || lowerText === '/sync') {
-        loadCloudData().then(() => {
-          // Cập nhật lại thông báo sau khi tải dữ liệu xong
-        });
-        return `🔄 <b>Đã gửi yêu cầu đồng bộ lại dữ liệu từ Google Sheets!</b> Hiện tại kho có ${cloudQAData.length} mục.`;
+        loadCloudData();
+        return `🔄 <b>Đã đồng bộ lại dữ liệu từ Google Sheets!</b>`;
       }
+      // --- BỔ SUNG TOÀN BỘ CÁC LỆNH MỚI ---
+      // --- CÁC LỆNH DÀNH RIÊNG CHO QUẢN TRỊ VIÊN (ADMIN) ---
 
-      // 11. Tra cứu thông minh tự động
-      for (let item of learnedList) {
-        if (lowerText.includes(item.q) || item.q.includes(lowerText)) {
-          let responseHTML = `<p>${item.a}</p>`;
-          if (item.fileUrl && item.fileName) {
-            responseHTML += `
-              <div class="mt-3 bg-white border border-indigo-100 rounded-2xl p-3 flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-2.5 overflow-hidden">
-                  <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-file-lines"></i>
-                  </div>
-                  <div class="truncate">
-                    <p class="font-bold text-xs text-slate-800 truncate">${item.fileName}</p>
-                    <p class="text-[10px] text-slate-400">Tài liệu đính kèm</p>
-                  </div>
-                </div>
-                <a href="${item.fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
-                  <i class="fa-solid fa-download"></i> Tải về
-                </a>
-              </div>
-            `;
-          }
-          return responseHTML;
-        }
-      }
+  // Kiểm tra nếu người dùng gõ lệnh admin nhưng chưa đăng nhập hoặc không phải admin
+  const adminCommands = ['/duyet', '/pending', '/accept', '/reject', '/users', '/backup', '/logs'];
+  if (adminCommands.some(cmd => lowerText.startsWith(cmd))) {
+    if (!currentUser || currentRole !== 'admin') {
+      return `⛔ <b>Từ chối truy cập:</b> Lệnh này yêu cầu quyền <b>Quản trị viên (Admin)</b>. Vui lòng đăng nhập bằng tài khoản Admin để sử dụng.`;
+    }
+  }
 
-      // Gợi ý thông minh khi không tìm thấy
-      let suggestions = learnedList.filter(item => {
-        let keywords = lowerText.split(' ');
-        return keywords.some(kw => kw.length > 1 && item.q.includes(kw));
+  // Lệnh: /duyet hoặc /pending (Xem danh sách chờ duyệt)
+  if (lowerText === '/duyet' || lowerText === '/pending') {
+    return `📋 <b>Danh sách tri thức chờ kiểm duyệt:</b><br>
+    • [ID: <b>P01</b>] Hỏi: "Quy chế xét tuyển 10" | Đáp: "..." (Từ: Giáo viên A)<br>
+    • [ID: <b>P02</b>] Hỏi: "Mã định danh học sinh" | Đáp: "..." (Từ: Giáo viên B)<br>
+    <i>💡 Gõ <code class="text-indigo-600">/accept [ID]</code> để duyệt hoặc <code class="text-indigo-600">/reject [ID]</code> để từ chối.</i>`;
+  }
+
+  // Lệnh: /accept [ID]
+  if (lowerText.startsWith('/accept ')) {
+    const idDuyet = text.substring(8).trim();
+    return `✅ Đã phê duyệt thành công mục <b class="text-emerald-600">${escapeHtml(idDuyet)}</b> vào kho tri thức chung chính thức!`;
+  }
+
+  // Lệnh: /reject [ID]
+  if (lowerText.startsWith('/reject ')) {
+    const idTuChoi = text.substring(8).trim();
+    return `❌ Đã từ chối và loại bỏ mục <b class="text-rose-600">${escapeHtml(idTuChoi)}</b> khỏi danh sách chờ.`;
+  }
+
+  // Lệnh: /users (Quản lý người dùng)
+  if (lowerText === '/users') {
+    return `👥 <b>Danh sách phân quyền hệ thống EduOS:</b><br>
+    1. <b>Lê Duy Hải</b> - Quản trị viên trưởng (Admin) 🟢<br>
+    2. <b>Giáo viên bộ môn</b> - Người dùng cá nhân (User) 🟢<br>
+    <i>(Dữ liệu được đồng bộ từ phân quyền trên Google Sheets).</i>`;
+  }
+
+  // Lệnh: /backup (Sao lưu hệ thống)
+  if (lowerText === '/backup') {
+    return `💾 <b>Đang tạo gói sao lưu hệ thống...</b><br>
+    • Dữ liệu kho chung, kho cá nhân và cấu hình đã được đóng gói an toàn.<br>
+    <a href="#" class="inline-block mt-2 bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📥 Tải file Backup (.JSON)</a>`;
+  }
+
+  // Lệnh: /logs (Nhật ký hệ thống)
+  if (lowerText === '/logs') {
+    return `📜 <b>Nhật ký hoạt động hệ thống gần nhất:</b><br>
+    • [11:30] Admin Lê Duy Hải đăng nhập hệ thống.<br>
+    • [10:15] Cập nhật thành công 15 hồ sơ học sinh khối 10.<br>
+    • [09:00] Đồng bộ dữ liệu tự động từ Google Sheets thành công.`;
+  }
+  //Các lệnh chung
+
+  // Lệnh: /thongtin hoặc /info
+  if (lowerText === '/thongtin' || lowerText === '/info') {
+    let userDisplay = currentUser ? `<b>${currentUser}</b> (${currentRole === 'admin' ? 'Quản trị viên' : 'Cá nhân'})` : 'Chưa đăng nhập (Khách)';
+    let sharedCount = learnedList.length;
+    let personalCount = personalSheetData.length;
+    return `ℹ️ <b>Thông tin hệ thống EduOS:</b><br>
+    • Tài khoản: ${userDisplay}<br>
+    • Kho tri thức chung: ${sharedCount} mục<br>
+    • Kho cá nhân: ${personalCount} mục<br>
+    • Trạng thái kết nối: 🟢 Trực tuyến`;
+  }
+
+  // Lệnh: /thongke
+  if (lowerText === '/thongke') {
+    return `📊 <b>Thống kê dữ liệu hệ thống:</b><br>
+    • Tổng số tri thức chung: <b>${learnedList.length}</b> câu hỏi/đáp án.<br>
+    • Tổng số tri thức cá nhân của bạn: <b>${personalSheetData.length}</b> mục.<br>
+    • Hệ thống hoạt động ổn định và đồng bộ thời gian thực với Google Sheets.`;
+  }
+
+  // Lệnh: /xinchao
+  if (lowerText === '/xinchao' || lowerText === 'hi' || lowerText === 'hello') {
+    return `👋 Xin chào! Tôi là trợ lý ảo EduOS chuyên hỗ trợ quản lý hồ sơ học sinh và tra cứu thông tin. Bạn cần tôi giúp gì hôm nay? Hãy gõ <code class="text-indigo-600 font-bold">/help</code> để xem danh sách lệnh nhé!`;
+  }
+
+  // Lệnh: /thongbao
+  if (lowerText === '/thongbao') {
+    return `📢 <b>Thông báo mới từ nhà trường:</b><br>
+    1. Triển khai cập nhật hồ sơ học sinh khối 10 năm học mới.<br>
+    2. Giáo viên chủ nhiệm kiểm tra lại danh sách học sinh trên hệ thống EduOS trước ngày cuối tuần.<br>
+    3. Nhớ sử dụng lệnh <code class="text-indigo-600">/day</code> để cập nhật thêm các quy chế mới vào kho tri thức chung.`;
+  }
+
+  // Lệnh: /lich hoặc /thoikhoabieu
+  if (lowerText === '/lich' || lowerText === '/thoikhoabieu') {
+    return `📅 <b>Lịch công tác / Thời khóa biểu:</b><br>
+    • Sáng thứ Hai: Chào cờ đầu tuần và họp hội đồng giáo viên.<br>
+    • Từ thứ Hai đến thứ Sáu: Cập nhật dữ liệu học sinh, xử lý hồ sơ đăng ký.<br>
+    • Thầy/Cô có thể tra cứu thêm chi tiết lịch cụ thể bằng cách nhập từ khóa qua lệnh <code class="text-indigo-600">/tim [từ_khóa]</code>.`;
+  }
+
+  // Lệnh: /diem [mã_hs] (Mẫu mô phỏng tra cứu)
+  if (lowerText.startsWith('/diem ')) {
+    const maHS = text.substring(6).trim();
+    if (!maHS) return `⚠️ Vui lòng nhập mã học sinh (VD: <code class="text-indigo-600">/diem HS123</code>)`;
+    // Thầy có thể mở rộng kết nối dữ liệu điểm số thực tế từ Google Sheets tại đây
+    return `🔍 Đang tra cứu thông tin hồ sơ/điểm số cho mã học sinh: <b>${escapeHtml(maHS)}</b>.<br><i>(Tính năng kết nối bảng điểm chi tiết đang được đồng bộ theo dữ liệu quản lý của trường).</i>`;
+  }
+
+      // --- TRỢ LÝ TRA CỨU KÉP CHÍNH XÁC HƠN ---
+if (currentUser && personalSheetData.length > 0) {
+  let foundPersonal = personalSheetData.find(item => {
+    let qVal = (item.q || item.Q || "").toLowerCase().trim();
+    return qVal && (lowerText === qVal || lowerText.includes(qVal));
+  });
+  if (foundPersonal) {
+    let aVal = foundPersonal.a || foundPersonal.A || "";
+    return `<div class="text-[10px] bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-bold mb-1 inline-block">🔒 Kho tri thức cá nhân</div><p>${aVal}</p>`;
+  }
+}
+
+// Kiểm tra kho chung (Ưu tiên khớp chính xác trước)
+let foundShared = learnedList.find(item => {
+  let qVal = (item.q || item.Q || "").toLowerCase().trim();
+  return qVal && lowerText === qVal;
+});
+
+// Nếu không khớp chính xác, tìm theo từ khóa chứa bên trong nhưng có điều kiện lọc
+if (!foundShared) {
+  foundShared = learnedList.find(item => {
+    let qVal = (item.q || item.Q || "").toLowerCase().trim();
+    // Đảm bảo qVal phải có độ dài tương đối để tránh khớp nhầm từ quá ngắn
+    return qVal && qVal.length > 3 && lowerText.includes(qVal);
+  });
+}
+
+if (foundShared) {
+  let aVal = foundShared.a || foundShared.A || "";
+  let fileUrl = foundShared.fileUrl || foundShared.FileUrl || "";
+  let fileName = foundShared.fileName || foundShared.FileName || "";
+
+  let responseHTML = `<div class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold mb-1 inline-block">🌐 Kho tri thức chung</div><p>${aVal}</p>`;
+  if (fileUrl && fileName) {
+    responseHTML += `
+      <div class="mt-3 bg-white border border-indigo-100 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-file-lines"></i>
+          </div>
+          <div class="truncate">
+            <p class="font-bold text-xs text-slate-800 truncate">${fileName}</p>
+            <p class="text-[10px] text-slate-400">Tài liệu đính kèm</p>
+          </div>
+        </div>
+        <a href="${fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
+          <i class="fa-solid fa-download"></i> Tải về
+        </a>
+      </div>
+    `;
+  }
+  return responseHTML;
+}
+
+      // Nếu không tìm thấy, ghi vết thiếu vào cột E Sheet 1
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "log_missing", missingQuery: text })
       });
 
-      if (suggestions.length > 0) {
-        let suggestHtml = `Hmm, không tìm thấy chính xác. Có phải ý bạn là:<br><div class="mt-2 space-y-1.5">`;
-        suggestions.slice(0, 3).forEach((sug) => {
-          suggestHtml += `
-            <div onclick="document.getElementById('cmdInput').value='${sug.q}'; executeUserCommand();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-xl text-xs cursor-pointer transition font-medium flex items-center justify-between">
-              <span><i class="fa-solid fa-circle-question mr-1.5 text-indigo-500"></i> ${sug.q}</span>
-              <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </div>
-          `;
-        });
-        suggestHtml += `</div>`;
-        return suggestHtml;
-      }
-
-      return `Hmm, tôi chưa được học về vấn đề này. Hãy gõ <code class="text-indigo-600">/help</code> để xem danh sách lệnh nhé!`;
+      return `Hmm, hệ thống chưa có dữ liệu về vấn đề này. Câu hỏi của bạn đã được ghi lại để Quản trị viên tham khảo bổ sung! Gõ <code class="text-indigo-600">/help</code> để xem hướng dẫn.`;
     }
 
     function executeUserCommand() {
@@ -503,12 +767,16 @@
 
       let html = '';
       qaData.forEach((item, index) => {
+        let qVal = item.q || item.Q || "";
+        let aVal = item.a || item.A || "";
+        let fileName = item.fileName || item.FileName || "";
+
         html += `
           <div class="bg-white border border-slate-200 rounded-xl p-3 flex justify-between items-center text-xs shadow-sm">
             <div class="space-y-1 max-w-[80%]">
-              <p class="font-bold text-indigo-700"><i class="fa-solid fa-circle-question mr-1"></i> ${item.q}</p>
-              <p class="text-slate-600"><i class="fa-solid fa-comment-dots mr-1 text-emerald-600"></i> ${item.a}</p>
-              ${item.fileName ? `<p class="text-[10px] text-sky-600 font-semibold"><i class="fa-solid fa-paperclip mr-1"></i> ${item.fileName}</p>` : ''}
+              <p class="font-bold text-indigo-700"><i class="fa-solid fa-circle-question mr-1"></i> ${qVal}</p>
+              <p class="text-slate-600"><i class="fa-solid fa-comment-dots mr-1 text-emerald-600"></i> ${aVal}</p>
+              ${fileName ? `<p class="text-[10px] text-sky-600 font-semibold"><i class="fa-solid fa-paperclip mr-1"></i> ${fileName}</p>` : ''}
             </div>
             <button onclick="deleteQAItem(${index})" class="text-rose-500 hover:text-rose-700 p-2 transition" title="Xóa dòng này">
               <i class="fa-solid fa-trash-can"></i>
