@@ -23,10 +23,9 @@
     <div class="bg-sky-50 border border-sky-100 p-4 rounded-2xl text-left text-xs text-slate-700 space-y-2">
       <p class="font-bold text-sky-900"><i class="fa-solid fa-circle-info mr-1"></i> Hướng dẫn nhanh:</p>
       <p>• Nhìn sang <b>góc dưới bên phải</b> màn hình để thấy biểu tượng Trợ lý lệnh thông minh.</p>
-      <p>• Bạn có thể trò chuyện hoặc dùng lệnh <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/day</code> để dạy trợ lý học kiến thức mới trực tiếp!</p>
+      <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/quanly</code> để mở bảng quản lý kho tri thức kèm tệp tải về!</p>
     </div>
   </div>
-
 
   <!-- ================= WIDGET TRỢ LÝ LỆNH & TỰ HỌC (NỔI GÓC DƯỚI BÊN PHẢI) ================= -->
   <div id="eduCommandWidget" class="fixed bottom-5 right-5 z-50 font-sans">
@@ -48,7 +47,7 @@
           </div>
           <div>
             <h3 class="text-xs font-bold uppercase tracking-wide">Trợ Lý Thông Minh EduOS</h3>
-            <p class="text-[10px] text-sky-100 mt-0.5">Gõ <code class="bg-black/20 px-1 rounded">/help</code> để xem hướng dẫn</p>
+            <p class="text-[10px] text-sky-100 mt-0.5">Gõ <code class="bg-black/20 px-1 rounded">/quanly</code> để mở bảng quản lý</p>
           </div>
         </div>
         <button onclick="toggleCommandBox()" class="text-sky-100 hover:text-white p-1 rounded-lg transition">
@@ -61,15 +60,14 @@
         <div class="flex items-start gap-2">
           <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
           <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed">
-            Xin chào! Tôi là trợ lý ảo có khả năng <b>tự học</b>. Bạn có thể dạy tôi bằng lệnh:<br>
-            <code class="text-indigo-600 font-bold">/day câu hỏi | câu trả lời</code>
+            Xin chào! Tôi là trợ lý ảo EduOS. Bạn có thể gõ lệnh <code class="text-indigo-600 font-bold">/quanly</code> để mở bảng quản lý tài liệu và câu hỏi dễ dàng hơn.
           </div>
         </div>
       </div>
 
       <!-- Ô nhập nội dung -->
       <div class="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
-        <input type="text" id="cmdInput" placeholder="Nhập câu hỏi hoặc /day để dạy..." 
+        <input type="text" id="cmdInput" placeholder="Nhập câu hỏi hoặc /quanly..." 
           class="flex-1 bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           onkeypress="handleCmdKeyPress(event)">
         <button onclick="executeUserCommand()" class="bg-indigo-600 hover:bg-indigo-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-xs shrink-0 shadow transition">
@@ -80,259 +78,309 @@
     </div>
   </div>
 
-
-  <!-- ================= LOGIC JAVASCRIPT XỬ LÝ GIAO DIỆN VÀ TỰ HỌC ================= -->
-<script>
-  // Bật/tắt khung chat
-  function toggleCommandBox() {
-    const box = document.getElementById('commandBoxContainer');
-    const icon = document.getElementById('cmdIcon');
-    
-    if (box.classList.contains('hidden')) {
-      box.classList.remove('hidden');
-      setTimeout(() => {
-        box.classList.remove('scale-95', 'opacity-0');
-        box.classList.add('scale-100', 'opacity-100');
-        document.getElementById('cmdInput').focus();
-      }, 10);
-      icon.classList.remove('fa-wand-magic-sparkles');
-      icon.classList.add('fa-xmark');
-    } else {
-      box.classList.remove('scale-100', 'opacity-100');
-      box.classList.add('scale-95', 'opacity-0');
-      setTimeout(() => {
-        box.classList.add('hidden');
-      }, 200);
-      icon.classList.remove('fa-xmark');
-      icon.classList.add('fa-wand-magic-sparkles');
-    }
-  }
-
-  function handleCmdKeyPress(event) {
-    if (event.key === 'Enter') {
-      executeUserCommand();
-    }
-  }
-
-  // --- HỆ THỐNG BỘ NHỚ TỰ HỌC (LOCAL STORAGE) ---
-  function getLearnedQA() {
-    const data = localStorage.getItem('edu_learned_qa');
-    return data ? JSON.parse(data) : [];
-  }
-
-  function saveLearnedQA(question, answer) {
-    const list = getLearnedQA();
-    list.push({ q: question.toLowerCase().trim(), a: answer });
-    localStorage.setItem('edu_learned_qa', JSON.stringify(list));
-  }
-
-  // Động cơ phản hồi thông minh
-  function generateAIResponse(userInput) {
-    const text = userInput.trim();
-    const lowerText = text.toLowerCase();
-    const learnedList = getLearnedQA();
-
-    // 1. Lệnh XUẤT dữ liệu qua mã Base64
-    if (lowerText === '/export') {
-      const data = localStorage.getItem('edu_learned_qa') || '[]';
-      const encodedData = btoa(encodeURIComponent(data));
-      return `📤 <b>Mã dữ liệu kiến thức:</b><br><textarea class="w-full h-16 bg-slate-100 text-[10px] p-2 rounded border mt-1 font-mono select-all" readonly>${encodedData}</textarea><span class="text-[10px] text-slate-500">Hãy copy toàn bộ mã trên để mang sang máy khác.</span>`;
-    }
-
-    // 2. Lệnh TẢI xuống tệp .json
-    if (lowerText === '/tai' || lowerText === '/taikienhoc') {
-      const data = localStorage.getItem('edu_learned_qa') || '[]';
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'eduos_kien_thuc.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      return `📥 <b>Đã tải file kiến thức thành công!</b> Tệp <code class="text-indigo-600">eduos_kien_thuc.json</code> đã được lưu về thiết bị của bạn.`;
-    }
-
-    // 3. Lệnh NHẬP dữ liệu (Gộp chung với dữ liệu cũ)
-    if (lowerText.startsWith('/import ')) {
-      try {
-        const encodedData = text.substring(8).trim();
-        const decodedData = decodeURIComponent(atob(encodedData));
-        const newItems = JSON.parse(decodedData);
-        
-        if (!Array.isArray(newItems)) {
-          throw new Error("Format không phải mảng");
-        }
-
-        let currentList = getLearnedQA();
-        let addedCount = 0;
-
-        newItems.forEach(newItem => {
-          const exists = currentList.some(item => item.q === newItem.q);
-          if (!exists) {
-            currentList.push(newItem);
-            addedCount++;
-          }
-        });
-
-        localStorage.setItem('edu_learned_qa', JSON.stringify(currentList));
-        return `✅ <b>Gộp dữ liệu thành công!</b> Đã thêm mới ${addedCount} câu hỏi vào kho kiến thức (tổng số hiện có: ${currentList.length} câu).`;
-      } catch (e) {
-        return `❌ <b>Lỗi:</b> Mã nhập không hợp lệ hoặc bị sai định dạng!`;
-      }
-    }
-
-    
-    // 4. Lệnh DẠY (/day nội dung | câu trả lời) - Đã tích hợp bảo vệ khóa
-    if (lowerText.startsWith('/day ')) {
-      // Kiểm tra xem hệ thống có đang khóa tính năng tự học không
-      if (localStorage.getItem('edu_learning_locked') === 'true') {
-        return `🔒 <b>Tính năng tự học đang bị khóa!</b> Quản trị viên đã tạm vô hiệu hóa tính năng này để bảo vệ kho dữ liệu hệ thống.`;
-      }
-
-      let content = text.substring(5).trim();
-      const parts = content.split('|');
-      
-      if (parts.length === 2) {
-        const q = parts[0].trim();
-        const a = parts[1].trim();
-        saveLearnedQA(q, a);
-        return `✅ <b>Đã học thành công!</b> Từ bây giờ khi ai hỏi về "<b>${q}</b>", tôi sẽ trả lời là: "<i>${a}</i>"`;
-      } else {
-        return `⚠️ Cú pháp dạy chưa đúng! Bạn nhớ phải có dấu gạch đứng (<code class="text-indigo-600">|</code>) ở giữa:<br><code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
-      }
-    }
-    // Lệnh KHÓA tính năng tự học (Chặn người ngoài dạy bậy)
-    if (lowerText === '/khoaday') {
-      localStorage.setItem('edu_learning_locked', 'true');
-      return `🔒 <b>Đã khóa tính năng tự học!</b> Từ bây giờ không ai có thể dùng lệnh /day để thêm dữ liệu nữa.`;
-    }
-
-    // Lệnh MỞ KHÓA tính năng tự học (Yêu cầu mật khẩu bí mật)
-    if (lowerText.startsWith('/morkhoa ')) {
-      const pass = text.substring(9).trim();
-      // Đổi chữ 'admin2026' thành mật khẩu bí mật của riêng bạn
-      if (pass === 'admin2026') { 
-        localStorage.setItem('edu_learning_locked', 'false');
-        return `🔓 <b>Mở khóa thành công!</b> Bạn đã có thể tiếp tục dạy trợ lý ảo bằng lệnh /day.`;
-      } else {
-        return `❌ <b>Mật khẩu mở khóa không chính xác!</b>`;
-      }
-    }
-    
-
-    // 5. Lệnh XÓA THEO TỪ KHÓA (Ví dụ: /xoa [từ khóa])
-    if (lowerText.startsWith('/xoatuh ') || lowerText.startsWith('/xoa ')) {
-      const keyword = text.substring(text.indexOf(' ') + 1).toLowerCase().trim();
-      if (!keyword) {
-        return `⚠️ Vui lòng nhập từ khóa cần xóa. Ví dụ: <code class="text-indigo-600">/xoa nhạy_cảm</code>`;
-      }
-
-      let currentList = getLearnedQA();
-      const initialCount = currentList.length;
-
-      // Lọc lại: Giữ những câu KHÔNG chứa từ khóa cần xóa
-      const filteredList = currentList.filter(item => !item.q.includes(keyword) && !item.a.includes(keyword));
-      const removedCount = initialCount - filteredList.length;
-
-      if (removedCount === 0) {
-        return `🔍 Không tìm thấy mục nào chứa từ khóa "<b>${keyword}</b>" để xóa.`;
-      }
-
-      localStorage.setItem('edu_learned_qa', JSON.stringify(filteredList));
-      return `🗑️ <b>Đã xóa thành công!</b> Đã loại bỏ ${removedCount} mục chứa từ khóa "<b>${keyword}</b>" (Còn lại ${filteredList.length} câu).`;
-    }
-
-    // 6. Lệnh XÓA TẤT CẢ bộ nhớ tự học
-    if (lowerText === '/xoada') {
-      localStorage.removeItem('edu_learned_qa');
-      return "🗑️ <b>Đã xóa sạch!</b> Toàn bộ kho kiến thức tự học đã được làm mới.";
-    }
-
-    // 7. Lệnh xem danh sách đã học
-    if (lowerText === '/xemda' || lowerText === '/danhsach') {
-      const list = getLearnedQA();
-      if (list.length === 0) return "📂 Hiện tại tôi chưa được dạy thêm kiến thức nào ngoài hệ thống gốc.";
-      let result = `📚 <b>Danh sách kiến thức tôi đã được học (${list.length} câu):</b><br>`;
-      list.forEach((item, index) => {
-        result += `<br><b>${index + 1}. Hỏi:</b> ${item.q}<br><b>   Đáp:</b> ${item.a}`;
-      });
-      return result;
-    }
-
-    // 8. Lệnh trợ giúp
-    // Lệnh trợ giúp (Ẩn bớt các lệnh quản trị nhạy cảm nếu muốn)
-    if (lowerText === '/help' || lowerText === '/giup') {
-      const isLocked = localStorage.getItem('edu_learning_locked') === 'true';
-      let helpText = `<b>Danh sách lệnh hệ thống:</b><br>• Trò chuyện tra cứu thông tin<br>• /xemda (Xem kho kiến thức)`;
-      
-      // Nếu là bạn (admin đang mở khóa hoặc muốn biết) có thể thấy thêm
-      if (!isLocked) {
-        helpText += `<br>• /day [hỏi] | [trả lời] (Đang mở)<br>• /khoaday (Khóa lại)`;
-      } else {
-        helpText += `<br><i>(Tính năng tự học đang bị khóa bởi Quản trị viên)</i>`;
-      }
-      return helpText;
-    }
-
-    // 9. Kiểm tra trong kho kiến thức đã được dạy
-    for (let item of learnedList) {
-      if (lowerText.includes(item.q)) {
-        return `💡 <i>(Kiến thức đã học):</i> ${item.a}`;
-      }
-    }
-
-    // 10. Từ khóa mặc định hệ thống
-    if (lowerText.includes('mật khẩu') || lowerText.includes('quên')) {
-      return "🔑 Lần đầu đăng nhập, bạn bắt buộc phải đổi mật khẩu mới. Nếu quên, vui lòng liên hệ GVCN.";
-    }
-
-    // 11. Phản hồi mặc định khi không tìm thấy
-    return `Hmm, tôi chưa được học về vấn đề này. Hãy dạy cho tôi bằng cách gõ:<br><code class="text-indigo-600">/day nội dung hỏi | câu trả lời</code>`;
-  }
-
-  // Thực thi gửi và nhận tin nhắn trên giao diện
-  function executeUserCommand() {
-    const input = document.getElementById('cmdInput');
-    const msgContainer = document.getElementById('cmdMessages');
-    const text = input.value.trim();
-
-    if (!text) return;
-
-    msgContainer.insertAdjacentHTML('beforeend', `
-      <div class="flex items-start justify-end gap-2">
-        <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-sm shadow-sm max-w-[85%] text-xs">
-          ${escapeHtml(text)}
+  <!-- MODAL QUẢN LÝ DỮ LIỆU TỰ HỌC & TỆP ĐÍNH KÈM -->
+  <div id="qaManagerModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[85vh]">
+      <!-- Tiêu đề modal -->
+      <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold">
+            <i class="fa-solid fa-database text-xs"></i>
+          </div>
+          <h3 class="font-bold text-slate-800 text-sm uppercase">Kho Tri Thức & Tệp Đính Kèm Của EduOS</h3>
         </div>
-        <div class="w-7 h-7 bg-slate-300 text-slate-700 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">Bạn</div>
+        <button onclick="closeQAManager()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
-    `);
-    
-    input.value = '';
-    msgContainer.scrollTop = msgContainer.scrollHeight;
 
-    setTimeout(() => {
-      const botReply = generateAIResponse(text);
+      <!-- Nội dung bảng danh sách câu hỏi / tệp -->
+      <div class="flex-1 overflow-y-auto py-4 space-y-3">
+        <!-- Thêm tri thức mới kèm tệp tải về -->
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+          <p class="text-[11px] font-bold text-slate-600 uppercase">Thêm tri thức & tệp tải về mới:</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <input type="text" id="newQ" placeholder="Câu hỏi (VD: Quy chế nhà trường)" class="bg-white border border-slate-200 rounded-xl p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+            <input type="text" id="newA" placeholder="Câu trả lời giới thiệu..." class="bg-white border border-slate-200 rounded-xl p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+            <input type="text" id="newFileName" placeholder="Tên tệp hiển thị (VD: QuyChe.pdf)" class="bg-white border border-slate-200 rounded-xl p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+            <input type="text" id="newFileUrl" placeholder="Link tải file (Link Google Drive...)" class="bg-white border border-slate-200 rounded-xl p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+          <button onclick="addNewQAWithFile()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-xs transition shadow">
+            <i class="fa-solid fa-file-arrow-down mr-1"></i> Lưu Kiến Thức & Tệp Đính Kèm
+          </button>
+        </div>
 
-      msgContainer.insertAdjacentHTML('beforeend', `
-        <div class="flex items-start gap-2">
-          <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
-          <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed text-xs">
-            ${botReply}
+        <!-- Danh sách dữ liệu đã lưu -->
+        <div>
+          <p class="text-[11px] font-bold text-slate-500 mb-2">Danh sách các mục đang lưu trong hệ thống:</p>
+          <div id="qaTableList" class="space-y-2">
+            <!-- Render danh sách bằng JS -->
           </div>
         </div>
+      </div>
+
+      <!-- Nút đóng -->
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button onclick="closeQAManager()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl transition">
+          Đóng cửa sổ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LOGIC JAVASCRIPT XỬ LÝ GIAO DIỆN VÀ TỰ HỌC ================= -->
+  <script>
+    function toggleCommandBox() {
+      const box = document.getElementById('commandBoxContainer');
+      const icon = document.getElementById('cmdIcon');
+      
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        setTimeout(() => {
+          box.classList.remove('scale-95', 'opacity-0');
+          box.classList.add('scale-100', 'opacity-100');
+          document.getElementById('cmdInput').focus();
+        }, 10);
+        icon.classList.remove('fa-wand-magic-sparkles');
+        icon.classList.add('fa-xmark');
+      } else {
+        box.classList.remove('scale-100', 'opacity-100');
+        box.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+          box.classList.add('hidden');
+        }, 200);
+        icon.classList.remove('fa-xmark');
+        icon.classList.add('fa-wand-magic-sparkles');
+      }
+    }
+
+    function handleCmdKeyPress(event) {
+      if (event.key === 'Enter') {
+        executeUserCommand();
+      }
+    }
+
+    function getLearnedQA() {
+      const data = localStorage.getItem('edu_learned_qa');
+      return data ? JSON.parse(data) : [];
+    }
+
+    // Thêm câu hỏi kèm tệp từ Modal
+    function addNewQAWithFile() {
+      const q = document.getElementById('newQ').value.trim();
+      const a = document.getElementById('newA').value.trim();
+      const fileName = document.getElementById('newFileName').value.trim();
+      const fileUrl = document.getElementById('newFileUrl').value.trim();
+
+      if (!q || !a) {
+        alert('Vui lòng nhập tối thiểu Câu hỏi và Câu trả lời!');
+        return;
+      }
+
+      let qaData = JSON.parse(localStorage.getItem('edu_learned_qa')) || [];
+      qaData.push({ q: q.toLowerCase(), a, fileName, fileUrl });
+      localStorage.setItem('edu_learned_qa', JSON.stringify(qaData));
+
+      // Reset form
+      document.getElementById('newQ').value = '';
+      document.getElementById('newA').value = '';
+      document.getElementById('newFileName').value = '';
+      document.getElementById('newFileUrl').value = '';
+      
+      renderQAListInModal();
+      alert('✅ Đã lưu tri thức kèm tệp thành công!');
+    }
+
+    // Động cơ phản hồi thông minh
+    function generateAIResponse(userInput) {
+      const text = userInput.trim();
+      const lowerText = text.toLowerCase();
+      const learnedList = getLearnedQA();
+
+      // 1. Lệnh XUẤT dữ liệu qua mã Base64
+      if (lowerText === '/export') {
+        const data = localStorage.getItem('edu_learned_qa') || '[]';
+        const encodedData = btoa(encodeURIComponent(data));
+        return `📤 <b>Mã dữ liệu kiến thức:</b><br><textarea class="w-full h-16 bg-slate-100 text-[10px] p-2 rounded border mt-1 font-mono select-all" readonly>${encodedData}</textarea><span class="text-[10px] text-slate-500">Hãy copy toàn bộ mã trên để mang sang máy khác.</span>`;
+      }
+
+      // 2. Lệnh TẢI xuống tệp .json
+      if (lowerText === '/tai' || lowerText === '/taikienhoc') {
+        const data = localStorage.getItem('edu_learned_qa') || '[]';
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'eduos_kien_thuc.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        return `📥 <b>Đã tải file kiến thức thành công!</b> Tệp <code class="text-indigo-600">eduos_kien_thuc.json</code> đã được lưu về thiết bị.`;
+      }
+
+      // 3. Khẩu lệnh mở bảng quản lý nhanh
+      if (lowerText === '/quanly' || lowerText === '/ql') {
+        openQAManager();
+        return `🗂️ <b>Đã mở bảng quản lý trực quan!</b> Hãy kiểm tra cửa sổ đang hiển thị trên màn hình để thêm/sửa/xóa câu trả lời và tài liệu.`;
+      }
+
+      // 4. Lệnh DẠY nhanh bằng khung chat (/day câu hỏi | câu trả lời)
+      if (lowerText.startsWith('/day ')) {
+        if (localStorage.getItem('edu_learning_locked') === 'true') {
+          return `🔒 <b>Tính năng tự học đang bị khóa!</b>`;
+        }
+
+        let content = text.substring(5).trim();
+        const parts = content.split('|');
+        
+        if (parts.length === 2) {
+          const q = parts[0].trim().toLowerCase();
+          const a = parts[1].trim();
+          let qaData = getLearnedQA();
+          qaData.push({ q, a, fileName: "", fileUrl: "" });
+          localStorage.setItem('edu_learned_qa', JSON.stringify(qaData));
+          return `✅ <b>Đã học thành công!</b> Từ bây giờ khi ai hỏi về "<b>${q}</b>", tôi sẽ trả lời là: "<i>${a}</i>"`;
+        } else {
+          return `⚠️ Cú pháp dạy chưa đúng! Phải có dấu gạch đứng (<code class="text-indigo-600">|</code>):<br><code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
+        }
+      }
+
+      // 5. Kiểm tra trong kho kiến thức kèm thuật toán GỢI Ý THÔNG MINH khi nhập gần đúng
+      for (let item of learnedList) {
+        if (lowerText.includes(item.q) || item.q.includes(lowerText)) {
+          let responseHTML = `<p>${item.a}</p>`;
+          
+          if (item.fileUrl && item.fileName) {
+            responseHTML += `
+              <div class="mt-3 bg-white border border-indigo-100 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-2.5 overflow-hidden">
+                  <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-file-lines"></i>
+                  </div>
+                  <div class="truncate">
+                    <p class="font-bold text-xs text-slate-800 truncate">${item.fileName}</p>
+                    <p class="text-[10px] text-slate-400">Tài liệu đính kèm chính thức</p>
+                  </div>
+                </div>
+                <a href="${item.fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
+                  <i class="fa-solid fa-download"></i> Tải về
+                </a>
+              </div>
+            `;
+          }
+          return responseHTML;
+        }
+      }
+
+      // --- TÍNH NĂNG GỢI Ý CÂU HỎI LIÊN QUAN KHI KHÔNG TÌM THẤY CHÍNH XÁC ---
+      let suggestions = learnedList.filter(item => {
+        // Tách các từ khóa người dùng gõ để tìm điểm chung
+        let keywords = lowerText.split(' ');
+        return keywords.some(kw => kw.length > 1 && item.q.includes(kw));
+      });
+
+      if (suggestions.length > 0) {
+        let suggestHtml = `Hmm, có phải ý bạn là một trong số các câu hỏi sau không?<br><div class="mt-2 space-y-1.5">`;
+        suggestions.slice(0, 3).forEach((sug, idx) => {
+          suggestHtml += `
+            <div onclick="document.getElementById('cmdInput').value='${sug.q}'; executeUserCommand();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-xl text-xs cursor-pointer transition font-medium flex items-center justify-between">
+              <span><i class="fa-solid fa-circle-question mr-1.5 text-indigo-500"></i> ${sug.q}</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </div>
+          `;
+        });
+        suggestHtml += `</div>`;
+        return suggestHtml;
+      }
+
+      // 6. Mặc định
+      return `Hmm, tôi chưa được học về vấn đề này. Hãy gõ lệnh <code class="text-indigo-600">/quanly</code> để thêm kiến thức kèm tệp hoặc dùng lệnh <code class="text-indigo-600">/day</code> nhé!`;
+    }
+
+    function executeUserCommand() {
+      const input = document.getElementById('cmdInput');
+      const msgContainer = document.getElementById('cmdMessages');
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      msgContainer.insertAdjacentHTML('beforeend', `
+        <div class="flex items-start justify-end gap-2">
+          <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-sm shadow-sm max-w-[85%] text-xs">
+            ${escapeHtml(text)}
+          </div>
+          <div class="w-7 h-7 bg-slate-300 text-slate-700 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">Bạn</div>
+        </div>
       `);
+      
+      input.value = '';
       msgContainer.scrollTop = msgContainer.scrollHeight;
-    }, 300);
-  }
 
-  function escapeHtml(string) {
-    return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-</script>
+      setTimeout(() => {
+        const botReply = generateAIResponse(text);
 
+        msgContainer.insertAdjacentHTML('beforeend', `
+          <div class="flex items-start gap-2">
+            <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
+            <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed text-xs">
+              ${botReply}
+            </div>
+          </div>
+        `);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+      }, 300);
+    }
+
+    function escapeHtml(string) {
+      return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Các hàm quản lý Modal
+    function openQAManager() {
+      document.getElementById('qaManagerModal').classList.remove('hidden');
+      renderQAListInModal();
+    }
+
+    function closeQAManager() {
+      document.getElementById('qaManagerModal').classList.add('hidden');
+    }
+
+    function renderQAListInModal() {
+      const container = document.getElementById('qaTableList');
+      let qaData = getLearnedQA();
+
+      if (qaData.length === 0) {
+        container.innerHTML = `<div class="text-slate-400 text-center py-4 italic text-xs">Chưa có dữ liệu tự học nào...</div>`;
+        return;
+      }
+
+      let html = '';
+      qaData.forEach((item, index) => {
+        html += `
+          <div class="bg-white border border-slate-200 rounded-xl p-3 flex justify-between items-center text-xs shadow-sm">
+            <div class="space-y-1 max-w-[80%]">
+              <p class="font-bold text-indigo-700"><i class="fa-solid fa-circle-question mr-1"></i> ${item.q}</p>
+              <p class="text-slate-600"><i class="fa-solid fa-comment-dots mr-1 text-emerald-600"></i> ${item.a}</p>
+              ${item.fileName ? `<p class="text-[10px] text-sky-600 font-semibold"><i class="fa-solid fa-paperclip mr-1"></i> ${item.fileName}</p>` : ''}
+            </div>
+            <button onclick="deleteQAItem(${index})" class="text-rose-500 hover:text-rose-700 p-2 transition" title="Xóa dòng này">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function deleteQAItem(index) {
+      let qaData = getLearnedQA();
+      qaData.splice(index, 1);
+      localStorage.setItem('edu_learned_qa', JSON.stringify(qaData));
+      renderQAListInModal();
+    }
+  </script>
 </body>
 </html>
