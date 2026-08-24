@@ -21,25 +21,22 @@
     <p class="text-xs text-slate-500 mt-1 mb-6">Quản lý và cập nhật hồ sơ học sinh trực tuyến</p>
     
     <div class="bg-sky-50 border border-sky-100 p-4 rounded-2xl text-left text-xs text-slate-700 space-y-2">
-      <p class="font-bold text-sky-900"><i class="fa-solid fa-circle-info mr-1"></i> Hướng dẫn nhanh:</p>
-      <p>• Nhìn sang <b>góc dưới bên phải</b> màn hình để thấy biểu tượng Trợ lý lệnh thông minh.</p>
-      <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/quanly</code> để mở bảng quản lý kho tri thức kèm tệp tải về!</p>
+      <p class="font-bold text-sky-900"><i class="fa-solid fa-circle-info mr-1"></i> Hướng dẫn lệnh nhanh:</p>
+      <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/help</code> để xem toàn bộ danh sách lệnh.</p>
+      <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/quanly</code> để mở bảng quản lý.</p>
+      <p>• Gõ <code class="bg-white px-1.5 py-0.5 rounded text-sky-600 font-bold border border-sky-200">/xoa [cụm từ]</code> để xóa nội dung nhạy cảm.</p>
     </div>
   </div>
 
-  <!-- ================= WIDGET TRỢ LÝ LỆNH & TỰ HỌC (NỔI GÓC DƯỚI BÊN PHẢI) ================= -->
+  <!-- ================= WIDGET TRỢ LÝ LỆNH & TỰ HỌC ================= -->
   <div id="eduCommandWidget" class="fixed bottom-5 right-5 z-50 font-sans">
-    
-    <!-- Nút tròn kích hoạt -->
     <button onclick="toggleCommandBox()" class="bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-500 hover:to-indigo-500 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-xl transition-all duration-300 hover:scale-105 focus:outline-none relative">
       <i id="cmdIcon" class="fa-solid fa-wand-magic-sparkles"></i>
       <span class="absolute top-0 right-0 w-3.5 h-3.5 bg-emerald-400 border-2 border-white rounded-full animate-pulse"></span>
     </button>
 
-    <!-- Khung cửa sổ chat & tự học -->
     <div id="commandBoxContainer" class="hidden absolute bottom-16 right-0 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col transition-all duration-300 transform scale-95 opacity-0 origin-bottom-right">
       
-      <!-- Tiêu đề khung chat -->
       <div class="bg-gradient-to-r from-sky-600 to-indigo-600 text-white p-4 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
           <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-inner">
@@ -47,7 +44,7 @@
           </div>
           <div>
             <h3 class="text-xs font-bold uppercase tracking-wide">Trợ Lý Thông Minh EduOS</h3>
-            <p class="text-[10px] text-sky-100 mt-0.5">Gõ <code class="bg-black/20 px-1 rounded">/quanly</code> để mở bảng quản lý</p>
+            <p class="text-[10px] text-sky-100 mt-0.5">Gõ <code class="bg-black/20 px-1 rounded">/help</code> để xem trợ giúp</p>
           </div>
         </div>
         <button onclick="toggleCommandBox()" class="text-sky-100 hover:text-white p-1 rounded-lg transition">
@@ -55,19 +52,17 @@
         </button>
       </div>
 
-      <!-- Khu vực hiển thị tin nhắn -->
       <div id="cmdMessages" class="p-4 h-80 overflow-y-auto space-y-3 bg-slate-50 text-xs text-slate-700">
         <div class="flex items-start gap-2">
           <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
           <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed">
-            Xin chào! Tôi là trợ lý ảo EduOS. Dữ liệu đang được đồng bộ đám mây tự động. Bạn có thể gõ lệnh <code class="text-indigo-600 font-bold">/quanly</code> để mở bảng quản lý.
+            Xin chào! Đã tích hợp đầy đủ lệnh xóa toàn bộ <code class="text-indigo-600 font-bold">/xoatoanbo</code> và lệnh xóa theo từ khóa nhạy cảm <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code>.
           </div>
         </div>
       </div>
 
-      <!-- Ô nhập nội dung -->
       <div class="p-3 bg-white border-t border-slate-100 flex items-center gap-2">
-        <input type="text" id="cmdInput" placeholder="Nhập câu hỏi hoặc /quanly..." 
+        <input type="text" id="cmdInput" placeholder="Nhập /help hoặc lệnh cần dùng..." 
           class="flex-1 bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           onkeypress="handleCmdKeyPress(event)">
         <button onclick="executeUserCommand()" class="bg-indigo-600 hover:bg-indigo-500 text-white w-10 h-10 rounded-xl flex items-center justify-center text-xs shrink-0 shadow transition">
@@ -78,10 +73,9 @@
     </div>
   </div>
 
-  <!-- MODAL QUẢN LÝ DỮ LIỆU TỰ HỌC & TỆP ĐÍNH KÈM -->
+  <!-- MODAL QUẢN LÝ -->
   <div id="qaManagerModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[85vh]">
-      <!-- Tiêu đề modal -->
       <div class="flex justify-between items-center pb-4 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold">
@@ -94,10 +88,7 @@
         </button>
       </div>
 
-      <!-- Nội dung bảng danh sách câu hỏi / tệp -->
       <div class="flex-1 overflow-y-auto py-4 space-y-4">
-        
-        <!-- KHU VỰC SAO LƯU & PHỤC HỒI DỮ LIỆU NHANH (GIAO DIỆN MỚI TRỰC QUAN) -->
         <div class="bg-indigo-50 border border-indigo-100 p-3.5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
           <div>
             <p class="text-xs font-bold text-indigo-900"><i class="fa-solid fa-cloud-arrow-down mr-1"></i> Sao lưu & Phục hồi dữ liệu:</p>
@@ -114,7 +105,6 @@
           </div>
         </div>
 
-        <!-- Thêm tri thức mới kèm tệp tải về -->
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
           <p class="text-[11px] font-bold text-slate-600 uppercase">Thêm tri thức & tệp tải về mới:</p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -128,16 +118,12 @@
           </button>
         </div>
 
-        <!-- Danh sách dữ liệu đã lưu -->
         <div>
           <p class="text-[11px] font-bold text-slate-500 mb-2">Danh sách các mục đang lưu trong hệ thống:</p>
-          <div id="qaTableList" class="space-y-2">
-            <!-- Render danh sách bằng JS -->
-          </div>
+          <div id="qaTableList" class="space-y-2"></div>
         </div>
       </div>
 
-      <!-- Nút đóng -->
       <div class="pt-3 border-t border-slate-100 flex justify-end">
         <button onclick="closeQAManager()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl transition">
           Đóng cửa sổ
@@ -146,14 +132,10 @@
     </div>
   </div>
 
-  <!-- ================= LOGIC JAVASCRIPT XỬ LÝ GIAO DIỆN VÀ TỰ HỌC ================= -->
   <script>
-    // 🔗 DÁN ĐƯỜNG DẪN WEB APP GOOGLE APPS SCRIPT CỦA BẠN VÀO DƯỚI ĐÂY:
-    const API_URL = "ĐƯỜNG_DẪN_GOOGLE_SCRIPT_CỦA_BẠN";
-
+    const API_URL = "https://script.google.com/macros/s/AKfycbyI1-e7CthYOcTdZcuqZxG3QfgIejdi2l5ntM7o-aynAAFnV3MUmpdhyFFhuZ8IRH6L/exec";
     let cloudQAData = [];
 
-    // Tự động tải dữ liệu từ Google Sheets khi mở trang web hoặc app điện thoại
     async function loadCloudData() {
       try {
         let response = await fetch(API_URL);
@@ -187,7 +169,7 @@
           body: JSON.stringify(newData)
         });
       } catch (e) {
-        console.log("Đã lưu tạm thiết bị, lỗi đồng bộ đám mây.");
+        console.log("Lỗi đồng bộ đám mây.");
       }
     }
 
@@ -246,7 +228,6 @@
       alert('✅ Đã lưu và đồng bộ lên Google Sheets thành công!');
     }
 
-    // Tải tệp JSON trực tiếp
     function exportJsonFile() {
       const data = JSON.stringify(getLearnedQA(), null, 2);
       const blob = new Blob([data], { type: 'application/json' });
@@ -261,7 +242,6 @@
       URL.revokeObjectURL(url);
     }
 
-    // Nhập tệp JSON trực tiếp bằng nút bấm chọn file
     function importJsonFile(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -273,38 +253,125 @@
           if (Array.isArray(parsedData)) {
             await syncToCloud(parsedData);
             renderQAListInModal();
-            alert(`📥 Nhập file thành công! Đã cập nhật ${parsedData.length} mục kiến thức và đồng bộ lên Google Sheets.`);
+            alert(`📥 Nhập file thành công! Đã cập nhật ${parsedData.length} mục kiến thức.`);
           } else {
             alert('⚠️ Cấu trúc tệp JSON không hợp lệ!');
           }
         } catch (err) {
-          alert('❌ Lỗi đọc tệp JSON! File không đúng định dạng.');
+          alert('❌ Lỗi đọc tệp JSON!');
         }
       };
       reader.readAsText(file);
-      event.target.value = ''; // Reset input file
+      event.target.value = '';
     }
 
-    // Động cơ phản hồi thông minh
     function generateAIResponse(userInput) {
       const text = userInput.trim();
       const lowerText = text.toLowerCase();
       const learnedList = getLearnedQA();
 
-      // 1. Lệnh TẢI xuống nhanh (/tai hoặc /taikienhoc)
+      // 0. Lệnh trợ giúp hướng dẫn (/help)
+      if (lowerText === '/help') {
+        return `📖 <b>Danh sách lệnh hỗ trợ EduOS:</b><br>
+        • <code class="text-indigo-600 font-bold">/help</code>: Xem hướng dẫn lệnh.<br>
+        • <code class="text-indigo-600 font-bold">/quanly</code> (hoặc <code class="text-indigo-600 font-bold">/ql</code>): Mở bảng quản lý.<br>
+        • <code class="text-indigo-600 font-bold">/xemda</code>: Xem nhanh tất cả dữ liệu.<br>
+        • <code class="text-indigo-600 font-bold">/tim [từ_khóa]</code>: Tìm kiếm chi tiết.<br>
+        • <code class="text-indigo-600 font-bold">/day [hỏi] | [đáp]</code>: Dạy kiến thức mới.<br>
+        • <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code>: Xóa các mục chứa từ nhạy cảm.<br>
+        • <code class="text-indigo-600 font-bold">/xoatoanbo</code>: Xóa sạch toàn bộ kho dữ liệu.<br>
+        • <code class="text-indigo-600 font-bold">/khoaday</code> / <code class="text-indigo-600 font-bold">/mokhoa</code>: Khóa/Mở tự học.<br>
+        • <code class="text-indigo-600 font-bold">/tai</code>: Tải file sao lưu JSON.`;
+      }
+
+      // 1. Lệnh khóa tính năng tự học (/khoaday)
+      if (lowerText === '/khoaday') {
+        localStorage.setItem('edu_learning_locked', 'true');
+        return `🔒 <b>Đã khóa tính năng tự học thành công!</b>`;
+      }
+
+      // 2. Lệnh mở khóa tính năng tự học (/mokhoa)
+      if (lowerText === '/mokhoa') {
+        localStorage.removeItem('edu_learning_locked');
+        return `🔓 <b>Đã mở khóa tính năng tự học!</b>`;
+      }
+
+      // 3. Lệnh XÓA TOÀN BỘ DỮ LIỆU (/xoatoanbo)
+      if (lowerText === '/xoatoanbo') {
+        syncToCloud([]);
+        return `🗑️ <b>Đã xóa sạch toàn bộ kho tri thức!</b> Hệ thống đã được làm trống.`;
+      }
+
+      // 4. Lệnh XÓA THEO CỤM TỪ NHẠY CẢM (/xoa [cụm_từ] hoặc /xoathengt [cụm_từ])
+      if (lowerText.startsWith('/xoa ') || lowerText.startsWith('/xoathengt ')) {
+        const keyword = text.substring(text.indexOf(' ') + 1).trim().toLowerCase();
+        if (!keyword) return `⚠️ Vui lòng nhập cụm từ cần xóa (VD: <code class="text-indigo-600">/xoa [từ_nhạy_cảm]</code>)`;
+        
+        let beforeCount = learnedList.length;
+        let filteredList = learnedList.filter(item => !item.q.includes(keyword) && !item.a.toLowerCase().includes(keyword));
+        let deletedCount = beforeCount - filteredList.length;
+
+        if (deletedCount === 0) {
+          return `🔍 Không tìm thấy mục nào chứa cụm từ "<b>${keyword}</b>" để xóa.`;
+        }
+
+        syncToCloud(filteredList);
+        return `🗑️ <b>Đã xóa thành công ${deletedCount} mục</b> có chứa cụm từ "<b>${keyword}</b>" ra khỏi hệ thống!`;
+      }
+
+      // 5. Lệnh TÌM KIẾM chuyên dụng theo từ khóa (/tim [từ_khóa])
+      if (lowerText.startsWith('/tim ')) {
+        const keyword = text.substring(5).trim().toLowerCase();
+        if (!keyword) return `⚠️ Vui lòng nhập từ khóa cần tìm (VD: <code class="text-indigo-600">/tim học sinh</code>)`;
+        
+        let results = learnedList.filter(item => item.q.includes(keyword) || item.a.toLowerCase().includes(keyword));
+        if (results.length === 0) {
+          return `🔍 Không tìm thấy kết quả nào khớp với từ khóa "<b>${keyword}</b>".`;
+        }
+
+        let resHtml = `🔍 <b>Tìm thấy ${results.length} kết quả cho "${keyword}":</b><div class="mt-2 space-y-1.5 max-h-48 overflow-y-auto">`;
+        results.forEach((item, idx) => {
+          resHtml += `
+            <div class="bg-indigo-50 p-2 rounded-xl text-xs space-y-0.5 border border-indigo-100">
+              <p class="font-bold text-indigo-700">${idx + 1}. Q: ${item.q}</p>
+              <p class="text-slate-600">A: ${item.a}</p>
+              ${item.fileName ? `<p class="text-[10px] text-sky-600"><i class="fa-solid fa-paperclip"></i> ${item.fileName}</p>` : ''}
+            </div>
+          `;
+        });
+        resHtml += `</div>`;
+        return resHtml;
+      }
+
+      // 6. Lệnh xem dữ liệu nhanh (/xemda)
+      if (lowerText === '/xemda') {
+        if (learnedList.length === 0) return "📂 Kho tri thức hiện đang trống.";
+        let listHtml = `📂 <b>Danh sách tri thức hiện tại (${learnedList.length} mục):</b><div class="mt-2 space-y-1 max-h-48 overflow-y-auto">`;
+        learnedList.forEach((item, idx) => {
+          listHtml += `<div class="bg-slate-100 p-1.5 rounded"><b>${idx+1}. Q:</b> ${item.q}<br><span class="text-slate-500">A: ${item.a}</span></div>`;
+        });
+        listHtml += `</div>`;
+        return listHtml;
+      }
+
+      // 7. Tải file (/tai)
       if (lowerText === '/tai' || lowerText === '/taikienhoc') {
         exportJsonFile();
-        return `📥 <b>Đã kích hoạt tải file kiến thức!</b> Tệp <code class="text-indigo-600">eduos_kien_thuc.json</code> đã được lưu về thiết bị của bạn.`;
+        return `📥 <b>Đã kích hoạt tải file kiến thức!</b>`;
       }
 
-      // 2. Khẩu lệnh mở bảng quản lý nhanh (/quanly hoặc /ql)
+      // 8. Mở quản lý (/quanly)
       if (lowerText === '/quanly' || lowerText === '/ql') {
         openQAManager();
-        return `🗂️ <b>Đã mở bảng quản lý trực quan!</b> Tại đây bạn có thể bấm nút Tải xuống hoặc Nhập file .JSON trực tiếp rất dễ dàng.`;
+        return `🗂️ <b>Đã mở bảng quản lý trực quan!</b>`;
       }
 
-      // 3. Lệnh DẠY nhanh bằng khung chat (/day câu hỏi | câu trả lời)
+      // 9. Dạy nhanh (/day)
       if (lowerText.startsWith('/day ')) {
+        if (localStorage.getItem('edu_learning_locked') === 'true') {
+          return `🔒 <b>Tính năng tự học đang bị khóa!</b> Hãy gõ lệnh <code class="text-indigo-600">/mokhoa</code> trước.`;
+        }
+
         let content = text.substring(5).trim();
         const parts = content.split('|');
         
@@ -315,17 +382,16 @@
           qaData.push({ q, a, fileName: "", fileUrl: "" });
           
           syncToCloud(qaData);
-          return `✅ <b>Đã học thành công và đồng bộ đám mây!</b> Từ bây giờ khi ai hỏi về "<b>${q}</b>", tôi sẽ trả lời là: "<i>${a}</i>"`;
+          return `✅ <b>Đã học thành công!</b> Hỏi: "<b>${q}</b>" -> Đáp: "<i>${a}</i>"`;
         } else {
-          return `⚠️ Cú pháp dạy chưa đúng! Phải có dấu gạch đứng (<code class="text-indigo-600">|</code>):<br><code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
+          return `⚠️ Cú pháp dạy chưa đúng! Dùng lệnh: <code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
         }
       }
 
-      // 4. Kiểm tra trong kho kiến thức kèm thuật toán GỢI Ý THÔNG MINH
+      // 10. Tra cứu thông minh tự động
       for (let item of learnedList) {
         if (lowerText.includes(item.q) || item.q.includes(lowerText)) {
           let responseHTML = `<p>${item.a}</p>`;
-          
           if (item.fileUrl && item.fileName) {
             responseHTML += `
               <div class="mt-3 bg-white border border-indigo-100 rounded-2xl p-3 flex items-center justify-between shadow-sm">
@@ -335,7 +401,7 @@
                   </div>
                   <div class="truncate">
                     <p class="font-bold text-xs text-slate-800 truncate">${item.fileName}</p>
-                    <p class="text-[10px] text-slate-400">Tài liệu đính kèm chính thức</p>
+                    <p class="text-[10px] text-slate-400">Tài liệu đính kèm</p>
                   </div>
                 </div>
                 <a href="${item.fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
@@ -348,14 +414,14 @@
         }
       }
 
-      // Gợi ý câu hỏi gần đúng
+      // Gợi ý thông minh khi không tìm thấy
       let suggestions = learnedList.filter(item => {
         let keywords = lowerText.split(' ');
         return keywords.some(kw => kw.length > 1 && item.q.includes(kw));
       });
 
       if (suggestions.length > 0) {
-        let suggestHtml = `Hmm, có phải ý bạn là một trong số các câu hỏi sau không?<br><div class="mt-2 space-y-1.5">`;
+        let suggestHtml = `Hmm, không tìm thấy chính xác. Có phải ý bạn là:<br><div class="mt-2 space-y-1.5">`;
         suggestions.slice(0, 3).forEach((sug) => {
           suggestHtml += `
             <div onclick="document.getElementById('cmdInput').value='${sug.q}'; executeUserCommand();" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-xl text-xs cursor-pointer transition font-medium flex items-center justify-between">
@@ -368,7 +434,7 @@
         return suggestHtml;
       }
 
-      return `Hmm, tôi chưa được học về vấn đề này. Hãy gõ lệnh <code class="text-indigo-600">/quanly</code> để thêm kiến thức kèm tệp hoặc dùng lệnh <code class="text-indigo-600">/day</code> nhé!`;
+      return `Hmm, tôi chưa được học về vấn đề này. Hãy gõ <code class="text-indigo-600">/help</code> để xem danh sách lệnh nhé!`;
     }
 
     function executeUserCommand() {
@@ -392,7 +458,6 @@
 
       setTimeout(() => {
         const botReply = generateAIResponse(text);
-
         msgContainer.insertAdjacentHTML('beforeend', `
           <div class="flex items-start gap-2">
             <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
