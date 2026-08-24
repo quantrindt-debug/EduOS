@@ -357,29 +357,53 @@
     }
 
     async function addNewQAWithFile() {
-      const q = document.getElementById('newQ').value.trim();
-      const a = document.getElementById('newA').value.trim();
-      const fileName = document.getElementById('newFileName').value.trim();
-      const fileUrl = document.getElementById('newFileUrl').value.trim();
+  const q = document.getElementById('newQ').value.trim();
+  const a = document.getElementById('newA').value.trim();
+  const fileName = document.getElementById('newFileName').value.trim();
+  const fileUrl = document.getElementById('newFileUrl').value.trim();
 
-      if (!q || !a) {
-        alert('Vui lòng nhập tối thiểu Câu hỏi và Câu trả lời!');
-        return;
-      }
+  if (!q || !a) {
+    alert('Vui lòng nhập tối thiểu Câu hỏi và Câu trả lời!');
+    return;
+  }
 
-      let qaData = getLearnedQA();
-      qaData.push({ q: q.toLowerCase(), a, fileName, fileUrl });
-      await syncToCloud(qaData);
+  let qaData = getLearnedQA();
+  // Đưa đầy đủ thông tin vào mảng
+  qaData.push({ q: q.toLowerCase(), a, fileName, fileUrl });
+  
+  // Lưu và đồng bộ dữ liệu kèm tệp lên Google Sheets
+  await syncToCloudWithFile(qaData, { q: q.toLowerCase(), a, fileName, fileUrl });
 
-      document.getElementById('newQ').value = '';
-      document.getElementById('newA').value = '';
-      document.getElementById('newFileName').value = '';
-      document.getElementById('newFileUrl').value = '';
-      
-      renderQAListInModal();
-      alert('✅ Đã lưu và đồng bộ lên Google Sheets thành công!');
-    }
+  document.getElementById('newQ').value = '';
+  document.getElementById('newA').value = '';
+  document.getElementById('newFileName').value = '';
+  document.getElementById('newFileUrl').value = '';
+  
+  renderQAListInModal();
+  alert('✅ Đã lưu và đồng bộ tệp lên Google Sheets thành công!');
+}
 
+// Hàm đồng bộ chuyên biệt có hỗ trợ tệp đính kèm
+async function syncToCloudWithFile(newData, newItem) {
+  sharedSheetData = newData;
+  localStorage.setItem('edu_learned_qa', JSON.stringify(newData));
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({ 
+        action: "teach_with_file", // Hoặc action tương ứng phía Apps Script của thầy
+        username: currentUser || "admin",
+        q: newItem.q,
+        a: newItem.a,
+        fileName: newItem.fileName,
+        fileUrl: newItem.fileUrl,
+        data: newData 
+      })
+    });
+  } catch (e) {
+    console.log("Lỗi đồng bộ đám mây tệp đính kèm.");
+  }
+}
     function exportJsonFile() {
       const data = JSON.stringify(getLearnedQA(), null, 2);
       const blob = new Blob([data], { type: 'application/json' });
@@ -747,10 +771,19 @@ if (foundShared) {
       return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    function openQAManager() {
-      document.getElementById('qaManagerModal').classList.remove('hidden');
-      renderQAListInModal();
-    }
+     function openQAManager() {
+  const modal = document.getElementById('qaManagerModal');
+  const adminFileSection = document.getElementById('adminFileSection'); // Khung chứa mục thêm tệp dành cho quản trị
+  
+  if (currentRole === 'admin') {
+    if (adminFileSection) adminFileSection.classList.remove('hidden');
+  } else {
+    if (adminFileSection) adminFileSection.classList.add('hidden');
+  }
+
+  modal.classList.remove('hidden');
+  renderQAListInModal();
+}
 
     function closeQAManager() {
       document.getElementById('qaManagerModal').classList.add('hidden');
@@ -793,6 +826,8 @@ if (foundShared) {
       await syncToCloud(qaData);
       renderQAListInModal();
     }
+
+
   </script>
 </body>
 </html>
