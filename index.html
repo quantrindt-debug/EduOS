@@ -281,7 +281,8 @@
         • <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code>: Xóa các mục chứa từ nhạy cảm.<br>
         • <code class="text-indigo-600 font-bold">/xoatoanbo</code>: Xóa sạch toàn bộ kho dữ liệu.<br>
         • <code class="text-indigo-600 font-bold">/khoaday</code> / <code class="text-indigo-600 font-bold">/mokhoa</code>: Khóa/Mở tự học.<br>
-        • <code class="text-indigo-600 font-bold">/tai</code>: Tải file sao lưu JSON.`;
+        • <code class="text-indigo-600 font-bold">/tai</code>: Tải file sao lưu JSON.<br>
+        • <code class="text-indigo-600 font-bold">/lammoi</code> (hoặc <code class="text-indigo-600 font-bold">/sync</code>): Cập nhật lại dữ liệu từ Google Sheets.`;
       }
 
       // 1. Lệnh khóa tính năng tự học (/khoaday)
@@ -388,7 +389,15 @@
         }
       }
 
-      // 10. Tra cứu thông minh tự động
+      // 10. Bổ sung lệnh làm mới dữ liệu từ Google Sheets trực tiếp
+      if (lowerText === '/lammoi' || lowerText === '/sync') {
+        loadCloudData().then(() => {
+          // Cập nhật lại thông báo sau khi tải dữ liệu xong
+        });
+        return `🔄 <b>Đã gửi yêu cầu đồng bộ lại dữ liệu từ Google Sheets!</b> Hiện tại kho có ${cloudQAData.length} mục.`;
+      }
+
+      // 11. Tra cứu thông minh tự động
       for (let item of learnedList) {
         if (lowerText.includes(item.q) || item.q.includes(lowerText)) {
           let responseHTML = `<p>${item.a}</p>`;
