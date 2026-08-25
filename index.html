@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trợ Lý Ảo Thông Minh  - KienoraAI</title>
+  <title>Cổng Cập Nhật Hồ Sơ Học Sinh - EduOS</title>
   <!-- Tailwind CSS qua CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome icon -->
@@ -35,7 +35,7 @@
     <div class="w-14 h-14 bg-sky-100 text-sky-600 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4 shadow-inner">
       <i class="fa-solid fa-graduation-cap"></i>
     </div>
-    <h1 class="text-xl font-extrabold text-slate-800 uppercase tracking-tight">Hệ Thống KienoraAI</h1>
+    <h1 class="text-xl font-extrabold text-slate-800 uppercase tracking-tight">Hệ Thống EduOS</h1>
     <p class="text-xs text-slate-500 mt-1 mb-6">Quản lý và cập nhật hồ sơ học sinh trực tuyến</p>
     
     <div class="bg-sky-50 border border-sky-100 p-4 rounded-2xl text-left text-xs text-slate-700 space-y-2">
@@ -61,7 +61,7 @@
             <i class="fa-solid fa-robot"></i>
           </div>
           <div>
-            <h3 class="text-xs font-bold uppercase tracking-wide">Trợ Lý Thông Minh KienoraAI</h3>
+            <h3 class="text-xs font-bold uppercase tracking-wide">Trợ Lý Thông Minh EduOS</h3>
             <p class="text-[10px] text-sky-100 mt-0.5">Gõ <code class="bg-black/20 px-1 rounded">/help</code> để xem trợ giúp</p>
           </div>
         </div>
@@ -99,7 +99,7 @@
           <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold">
             <i class="fa-solid fa-database text-xs"></i>
           </div>
-          <h3 class="font-bold text-slate-800 text-sm uppercase">Kho Tri Thức & Tệp Đính Kèm Của KienoraAI</h3>
+          <h3 class="font-bold text-slate-800 text-sm uppercase">Kho Tri Thức & Tệp Đính Kèm Của EduOS</h3>
         </div>
         <button onclick="closeQAManager()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg">
           <i class="fa-solid fa-xmark"></i>
@@ -452,7 +452,7 @@ async function syncToCloudWithFile(newData, newItem) {
       // Lệnh: /help
   // Lệnh: /help (Đã bao gồm nhóm lệnh Admin)
   if (lowerText === '/help' || lowerText === '/giupdo') {
-    let helpHTML = `🤖 <b>HƯỚNG DẪN HỆ THỐNG LỆNH KIENORAAI</b><br><br>
+    let helpHTML = `🤖 <b>HƯỚNG DẪN HỆ THỐNG LỆNH EDUOS</b><br><br>
     <b>1. Hệ thống & Trợ giúp:</b><br>
     • <code class="text-indigo-600 font-bold">/help</code> - Xem danh sách toàn bộ lệnh.<br>
     • <code class="text-indigo-600 font-bold">/lammoi</code> / <code class="text-indigo-600 font-bold">/sync</code> - Đồng bộ dữ liệu từ Google Sheets.<br>
@@ -583,10 +583,7 @@ async function syncToCloudWithFile(newData, newItem) {
 
   // Lệnh: /duyet hoặc /pending (Xem danh sách chờ duyệt)
   if (lowerText === '/duyet' || lowerText === '/pending') {
-    return `📋 <b>Danh sách tri thức chờ kiểm duyệt:</b><br>
-    • [ID: <b>P01</b>] Hỏi: "Quy chế xét tuyển 10" | Đáp: "..." (Từ: Giáo viên A)<br>
-    • [ID: <b>P02</b>] Hỏi: "Mã định danh học sinh" | Đáp: "..." (Từ: Giáo viên B)<br>
-    <i>💡 Gõ <code class="text-indigo-600">/accept [ID]</code> để duyệt hoặc <code class="text-indigo-600">/reject [ID]</code> để từ chối.</i>`;
+    return "ADMIN_CMD_FORWARD";
   }
 
   // Lệnh: /accept [ID]
@@ -603,7 +600,7 @@ async function syncToCloudWithFile(newData, newItem) {
 
   // Lệnh: /users (Quản lý người dùng)
   if (lowerText === '/users') {
-    return `👥 <b>Danh sách phân quyền hệ thống KienoraAI:</b><br>
+    return `👥 <b>Danh sách phân quyền hệ thống EduOS:</b><br>
     1. <b>Lê Duy Hải</b> - Quản trị viên trưởng (Admin) 🟢<br>
     2. <b>Giáo viên bộ môn</b> - Người dùng cá nhân (User) 🟢<br>
     <i>(Dữ liệu được đồng bộ từ phân quyền trên Google Sheets).</i>`;
@@ -630,7 +627,7 @@ async function syncToCloudWithFile(newData, newItem) {
     let userDisplay = currentUser ? `<b>${currentUser}</b> (${currentRole === 'admin' ? 'Quản trị viên' : 'Cá nhân'})` : 'Chưa đăng nhập (Khách)';
     let sharedCount = learnedList.length;
     let personalCount = personalSheetData.length;
-    return `ℹ️ <b>Thông tin hệ thống KienoraAI:</b><br>
+    return `ℹ️ <b>Thông tin hệ thống EduOS:</b><br>
     • Tài khoản: ${userDisplay}<br>
     • Kho tri thức chung: ${sharedCount} mục<br>
     • Kho cá nhân: ${personalCount} mục<br>
@@ -647,14 +644,14 @@ async function syncToCloudWithFile(newData, newItem) {
 
   // Lệnh: /xinchao
   if (lowerText === '/xinchao' || lowerText === 'hi' || lowerText === 'hello') {
-    return `👋 Xin chào! Tôi là trợ lý ảo KienoraAI chuyên hỗ trợ quản lý hồ sơ học sinh và tra cứu thông tin. Bạn cần tôi giúp gì hôm nay? Hãy gõ <code class="text-indigo-600 font-bold">/help</code> để xem danh sách lệnh nhé!`;
+    return `👋 Xin chào! Tôi là trợ lý ảo EduOS chuyên hỗ trợ quản lý hồ sơ học sinh và tra cứu thông tin. Bạn cần tôi giúp gì hôm nay? Hãy gõ <code class="text-indigo-600 font-bold">/help</code> để xem danh sách lệnh nhé!`;
   }
 
   // Lệnh: /thongbao
   if (lowerText === '/thongbao') {
     return `📢 <b>Thông báo mới từ nhà trường:</b><br>
     1. Triển khai cập nhật hồ sơ học sinh khối 10 năm học mới.<br>
-    2. Giáo viên chủ nhiệm kiểm tra lại danh sách học sinh trên hệ thống KienoraAI trước ngày cuối tuần.<br>
+    2. Giáo viên chủ nhiệm kiểm tra lại danh sách học sinh trên hệ thống EduOS trước ngày cuối tuần.<br>
     3. Nhớ sử dụng lệnh <code class="text-indigo-600">/day</code> để cập nhật thêm các quy chế mới vào kho tri thức chung.`;
   }
 
@@ -737,13 +734,14 @@ if (foundShared) {
       return `Hmm, hệ thống chưa có dữ liệu về vấn đề này. Câu hỏi của bạn đã được ghi lại để Quản trị viên tham khảo bổ sung! Gõ <code class="text-indigo-600">/help</code> để xem hướng dẫn.`;
     }
 
-    function executeUserCommand() {
+    async function executeUserCommand() {
       const input = document.getElementById('cmdInput');
       const msgContainer = document.getElementById('cmdMessages');
       const text = input.value.trim();
 
       if (!text) return;
 
+      // Hiển thị tin nhắn của người dùng lên khung chat
       msgContainer.insertAdjacentHTML('beforeend', `
         <div class="flex items-start justify-end gap-2">
           <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-sm shadow-sm max-w-[85%] text-xs">
@@ -756,6 +754,62 @@ if (foundShared) {
       input.value = '';
       msgContainer.scrollTop = msgContainer.scrollHeight;
 
+      // 1. Kiểm tra nếu là lệnh quản trị/duyệt cần gọi trực tiếp Google Apps Script
+      const lowerText = text.toLowerCase();
+      if (lowerText.startsWith("/duyet") || lowerText.startsWith("/pending") || lowerText.startsWith("/duyet_tt") || lowerText.startsWith("/xoa_tt") || lowerText.startsWith("/ds_")) {
+        
+        // Hiển thị trạng thái đang tải
+        const loadId = "load_" + Date.now();
+        msgContainer.insertAdjacentHTML('beforeend', `
+          <div id="${loadId}" class="flex items-start gap-2">
+            <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
+            <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 text-slate-400 text-xs italic">
+              Đang kết nối Google Sheets...
+            </div>
+          </div>
+        `);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+
+        try {
+          let res = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ 
+              action: "admin_cmd", 
+              username: currentUser, 
+              command: text 
+            })
+          });
+          let result = await res.json();
+          
+          // Xóa dòng đang tải
+          document.getElementById(loadId)?.remove();
+
+          let replyMessage = (result.status === "success") ? result.message.replace(/\n/g, '<br>') : ("⚠️ " + result.message);
+          
+          msgContainer.insertAdjacentHTML('beforeend', `
+            <div class="flex items-start gap-2">
+              <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
+              <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed text-xs">
+                ${replyMessage}
+              </div>
+            </div>
+          `);
+        } catch (e) {
+          document.getElementById(loadId)?.remove();
+          msgContainer.insertAdjacentHTML('beforeend', `
+            <div class="flex items-start gap-2">
+              <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">AI</div>
+              <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm border border-slate-100 max-w-[85%] leading-relaxed text-xs text-rose-600">
+                ❌ Lỗi kết nối tới máy chủ Google Apps Script!
+              </div>
+            </div>
+          `);
+        }
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+        return;
+      }
+
+      // 2. Xử lý các lệnh thông thường qua hàm generateAIResponse cũ của thầy
       setTimeout(() => {
         const botReply = generateAIResponse(text);
         msgContainer.insertAdjacentHTML('beforeend', `
