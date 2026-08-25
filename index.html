@@ -260,7 +260,7 @@
      API Google Apps Script giữ nguyên URL bạn đã cung cấp.
      ========================================================== */
 
-  const API_URL = "https://script.google.com/macros/s/AKfycby8GRv6ew_QapByIvYL3RS3dqhwsuUKU3XykLmJE8vyWoDZeGmEqAn40-I2fQHQk918/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbyI1-e7CthYOcTdZcuqZxG3QfgIejdi2l5ntM7o-aynAAFnV3MUmpdhyFFhuZ8IRH6L/exec";
 
   let currentUser = localStorage.getItem("kienora_current_user") || null;
   let currentRole = localStorage.getItem("kienora_current_role") || null;
@@ -1161,43 +1161,39 @@
       }
     }
 
-    /* ================= PERSONAL KNOWLEDGE ================= */
+    /* ================= TRA CỨU TRI THỨC THÔNG MINH ================= */
+
+    const normalizeSearchText = value => String(value ?? "")
+      .toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d").replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ").trim();
+
+    const searchText = normalizeSearchText(text);
+
+    const findKnowledge = list => {
+      const items = normalizeList(list);
+      if (!items.length || !searchText) return null;
+      let hit = items.find(item => normalizeSearchText(item.q) === searchText);
+      if (hit) return hit;
+      hit = items.find(item => { const q=normalizeSearchText(item.q); return q.length>=3 && searchText.includes(q); });
+      if (hit) return hit;
+      hit = items.find(item => { const q=normalizeSearchText(item.q); return searchText.length>=3 && q.includes(searchText); });
+      if (hit) return hit;
+      const words=[...new Set(searchText.split(" ").filter(w=>w.length>=2))]; let best=null,bestScore=0;
+      for(const item of items){ const q=normalizeSearchText(item.q); if(!q) continue; let matched=0;
+        words.forEach(w=>{if(q.split(" ").includes(w)||q.includes(w)) matched++;});
+        const score=matched/Math.max(words.length,1); if(matched>=2&&score>=0.45&&score>bestScore){best=item;bestScore=score;}
+      }
+      return best;
+    };
 
     if (currentUser && personalSheetData.length) {
-      const foundPersonal = personalSheetData.find(raw => {
-        const q = normalizeItem(raw).q.toLowerCase();
-        return q && (lowerText === q || lowerText.includes(q));
-      });
-
-      if (foundPersonal) {
-        const item = normalizeItem(foundPersonal);
-        return buildKnowledgeResponse(
-          item,
-          "🔒 Kho tri thức cá nhân"
-        );
-      }
+      const foundPersonal = findKnowledge(personalSheetData);
+      if (foundPersonal) return buildKnowledgeResponse(foundPersonal, "🔒 Kho tri thức cá nhân");
     }
 
-    /* ================= SHARED KNOWLEDGE ================= */
-
-    let foundShared = learnedList.find(raw => {
-      const q = normalizeItem(raw).q.toLowerCase();
-      return q && lowerText === q;
-    });
-
-    if (!foundShared) {
-      foundShared = learnedList.find(raw => {
-        const q = normalizeItem(raw).q.toLowerCase();
-        return q.length > 3 && lowerText.includes(q);
-      });
-    }
-
-    if (foundShared) {
-      return buildKnowledgeResponse(
-        normalizeItem(foundShared),
-        "🌐 Kho tri thức chung"
-      );
-    }
+    const foundShared = findKnowledge(learnedList);
+    if (foundShared) return buildKnowledgeResponse(normalizeItem(foundShared), "🌐 Kho tri thức chung");
 
     try {
       await postApi({
