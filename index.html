@@ -456,32 +456,35 @@ async function syncToCloudWithFile(newData, newItem) {
     <b>1. Hệ thống & Trợ giúp:</b><br>
     • <code class="text-indigo-600 font-bold">/help</code> - Xem danh sách toàn bộ lệnh.<br>
     • <code class="text-indigo-600 font-bold">/lammoi</code> / <code class="text-indigo-600 font-bold">/sync</code> - Đồng bộ dữ liệu từ Google Sheets.<br>
-    • <code class="text-indigo-600 font-bold">/thongtin</code> / <code class="text-indigo-600 font-bold">/info</code> - Xem thông tin tài khoản.<br><br>
+    • <code class="text-indigo-600 font-bold">/thongtin</code> / <code class="text-indigo-600 font-bold">/info</code> - Xem thông tin tài khoản.<br>
+    • <code class="text-indigo-600 font-bold">/thongke</code> - Thống kê dữ liệu hệ thống.<br><br>
 
     <b>2. Quản lý Tri thức:</b><br>
-    • <code class="text-indigo-600 font-bold">/quanly</code> / <code class="text-indigo-600 font-bold">/ql</code> - Mở bảng quản lý trực quan, sao lưu file .json.<br>
+    • <code class="text-indigo-600 font-bold">/quanly</code> / <code class="text-indigo-600 font-bold">/ql</code> - Mở bảng quản lý trực quan.<br>
     • <code class="text-indigo-600 font-bold">/day [hỏi] | [đáp]</code> - Dạy AI kiến thức mới (Cần đăng nhập).<br>
     • <code class="text-indigo-600 font-bold">/tim [từ_khóa]</code> - Tìm kiếm nhanh trong kho tri thức chung.<br>
-    • <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code> - Xóa các mục tri thức theo từ khóa.<br><br>
+    • <code class="text-indigo-600 font-bold">/xoa [cụm_từ]</code> - Xóa các mục tri thức theo từ khóa.<br>
+    • <code class="text-indigo-600 font-bold">/xoatoanbo</code> - Xóa sạch toàn bộ kho tri thức chung.<br><br>
 
     <b>3. Tra cứu & Tiện ích Học sinh:</b><br>
     • <code class="text-indigo-600 font-bold">/diem [mã_hs]</code> - Tra cứu hồ sơ/điểm số học sinh theo mã.<br>
     • <code class="text-indigo-600 font-bold">/lich</code> / <code class="text-indigo-600 font-bold">/thoikhoabieu</code> - Xem lịch công tác, thời khóa biểu.<br>
     • <code class="text-indigo-600 font-bold">/thongbao</code> - Xem thông báo mới từ nhà trường.`;
 
-    // Nếu là Admin, gộp thêm nhóm lệnh quản trị vào bảng help
     if (currentUser && currentRole === 'admin') {
       helpHTML += `<br><br><b>🛡️ 4. Nhóm lệnh Quản trị (Admin):</b><br>
-      • <code class="text-rose-600 font-bold">/duyet</code> - Xem danh sách tri thức chờ kiểm duyệt.<br>
-      • <code class="text-rose-600 font-bold">/accept [ID]</code> - Phê duyệt mục chờ.<br>
-      • <code class="text-rose-600 font-bold">/reject [ID]</code> - Từ chối mục chờ.<br>
-      • <code class="text-rose-600 font-bold">/users</code> - Quản lý danh sách người dùng.<br>
+      • <code class="text-rose-600 font-bold">/ds_tk</code> - Xem danh sách tài khoản người dùng.<br>
+      • <code class="text-rose-600 font-bold">/duyet_tk [user]</code> - Duyệt tài khoản người dùng.<br>
+      • <code class="text-rose-600 font-bold">/khoa_tk [user]</code> - Khóa / xóa tài khoản người dùng.<br>
+      • <code class="text-rose-600 font-bold">/ds_tt</code> - Xem danh sách tri thức chờ duyệt.<br>
+      • <code class="text-rose-600 font-bold">/duyet_tt [dòng]</code> - Phê duyệt tri thức theo dòng.<br>
+      • <code class="text-rose-600 font-bold">/xoa_tt [dòng]</code> - Xóa / từ chối tri thức theo dòng.<br>
       • <code class="text-rose-600 font-bold">/backup</code> - Sao lưu toàn bộ hệ thống.<br>
       • <code class="text-rose-600 font-bold">/logs</code> - Xem nhật ký hoạt động hệ thống.`;
     }
-
     return helpHTML;
   }
+
 
       // 1. Lệnh XÓA TOÀN BỘ DỮ LIỆU (/xoatoanbo)
       if (lowerText === '/xoatoanbo') {
