@@ -443,14 +443,12 @@ async function syncToCloudWithFile(newData, newItem) {
       event.target.value = '';
     }
 
-    function generateAIResponse(userInput) {
-      const text = userInput.trim();
-      const lowerText = text.toLowerCase();
-      const learnedList = getLearnedQA();
+function generateAIResponse(userInput) {
+  const text = userInput.trim();
+  const lowerText = text.toLowerCase();
+  const learnedList = getLearnedQA();
 
-      // 0. Lệnh trợ giúp hướng dẫn (/help)
-      // Lệnh: /help
-  // Lệnh: /help (Đã bao gồm nhóm lệnh Admin)
+  // 1. Lệnh trợ giúp /help hoặc /giupdo
   if (lowerText === '/help' || lowerText === '/giupdo') {
     let helpHTML = `🤖 <b>HƯỚNG DẪN HỆ THỐNG LỆNH EDUOS</b><br><br>
     <b>1. Hệ thống & Trợ giúp:</b><br>
@@ -485,159 +483,21 @@ async function syncToCloudWithFile(newData, newItem) {
     return helpHTML;
   }
 
-
-      // 1. Lệnh XÓA TOÀN BỘ DỮ LIỆU (/xoatoanbo)
-      if (lowerText === '/xoatoanbo') {
-        syncToCloud([]);
-        return `🗑️ <b>Đã xóa sạch toàn bộ kho tri thức chung!</b>`;
-      }
-
-      // 2. Lệnh XÓA THEO CỤM TỪ NHẠY CẢM (/xoa)
-      if (lowerText.startsWith('/xoa ')) {
-        const keyword = text.substring(5).trim().toLowerCase();
-        if (!keyword) return `⚠️ Vui lòng nhập cụm từ cần xóa (VD: <code class="text-indigo-600">/xoa [từ]</code>)`;
-        
-        let beforeCount = learnedList.length;
-        let filteredList = learnedList.filter(item => {
-          let qVal = item.q || item.Q || "";
-          let aVal = item.a || item.A || "";
-          return !qVal.toLowerCase().includes(keyword) && !aVal.toLowerCase().includes(keyword);
-        });
-        let deletedCount = beforeCount - filteredList.length;
-
-        if (deletedCount === 0) return `🔍 Không tìm thấy mục nào chứa "<b>${keyword}</b>".`;
-        syncToCloud(filteredList);
-        return `🗑️ <b>Đã xóa thành công ${deletedCount} mục</b> chứa từ "<b>${keyword}</b>"!`;
-      }
-
-      // 3. Lệnh TÌM KIẾM (/tim)
-      if (lowerText.startsWith('/tim ')) {
-        const keyword = text.substring(5).trim().toLowerCase();
-        if (!keyword) return `⚠️ Vui lòng nhập từ khóa cần tìm!`;
-        
-        let results = learnedList.filter(item => {
-          let qVal = item.q || item.Q || "";
-          let aVal = item.a || item.A || "";
-          return qVal.toLowerCase().includes(keyword) || aVal.toLowerCase().includes(keyword);
-        });
-        if (results.length === 0) return `🔍 Không tìm thấy kết quả cho "<b>${keyword}</b>".`;
-
-        let resHtml = `🔍 <b>Tìm thấy ${results.length} kết quả:</b><div class="mt-2 space-y-1.5 max-h-48 overflow-y-auto">`;
-        results.forEach((item, idx) => {
-          let qVal = item.q || item.Q || "";
-          let aVal = item.a || item.A || "";
-          resHtml += `
-            <div class="bg-indigo-50 p-2 rounded-xl text-xs space-y-0.5 border border-indigo-100">
-              <p class="font-bold text-indigo-700">${idx + 1}. Q: ${qVal}</p>
-              <p class="text-slate-600">A: ${aVal}</p>
-            </div>
-          `;
-        });
-        resHtml += `</div>`;
-        return resHtml;
-      }
-
-      // 4. Mở quản lý (/quanly)
-      if (lowerText === '/quanly' || lowerText === '/ql') {
-        openQAManager();
-        return `🗂️ <b>Đã mở bảng quản lý trực quan!</b>`;
-      }
-
-      // 5. Lệnh DẠY (/day) -> Đồng thời đẩy cá nhân và gửi sang cột F-J của Sheet 1
-      if (lowerText.startsWith('/day ')) {
-        if (!currentUser) {
-          return `⚠️ Bạn cần <b class="text-rose-600">đăng nhập</b> tài khoản mới có quyền dạy AI!`;
-        }
-
-        let content = text.substring(5).trim();
-        const parts = content.split('|');
-        if (parts.length === 2) {
-          const q = parts[0].trim().toLowerCase();
-          const a = parts[1].trim();
-
-          // Gửi lên Google Apps Script
-          fetch(API_URL, {
-            method: "POST",
-            body: JSON.stringify({ action: "teach", username: currentUser, q, a })
-          });
-
-          personalSheetData.push({ Q: q, A: a, FileName: "", FileUrl: "" });
-          return `✅ <b>Đã học thành công!</b> Đã lưu vào kho riêng và gửi yêu cầu kiểm duyệt lên hệ thống chính.`;
-        } else {
-          return `⚠️ Sai cú pháp! Dùng: <code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
-        }
-      }
-
-      // 6. Làm mới dữ liệu (/lammoi)
-      if (lowerText === '/lammoi' || lowerText === '/sync') {
-        loadCloudData();
-        return `🔄 <b>Đã đồng bộ lại dữ liệu từ Google Sheets!</b>`;
-      }
-      // --- BỔ SUNG TOÀN BỘ CÁC LỆNH MỚI ---
-      // --- CÁC LỆNH DÀNH RIÊNG CHO QUẢN TRỊ VIÊN (ADMIN) ---
-
-  // Kiểm tra nếu người dùng gõ lệnh admin nhưng chưa đăng nhập hoặc không phải admin
-  const adminCommands = ['/duyet', '/pending', '/accept', '/reject', '/users', '/backup', '/logs'];
-  if (adminCommands.some(cmd => lowerText.startsWith(cmd))) {
-    if (!currentUser || currentRole !== 'admin') {
-      return `⛔ <b>Từ chối truy cập:</b> Lệnh này yêu cầu quyền <b>Quản trị viên (Admin)</b>. Vui lòng đăng nhập bằng tài khoản Admin để sử dụng.`;
-    }
+  // 2. Lệnh chào hỏi
+  if (lowerText === '/xinchao' || lowerText === 'hi' || lowerText === 'hello') {
+    return `👋 Xin chào! Tôi là trợ lý ảo EduOS chuyên hỗ trợ quản lý hồ sơ học sinh và tra cứu thông tin. Bạn cần tôi giúp gì hôm nay? Hãy gõ <code class="text-indigo-600 font-bold">/help</code> để xem danh sách lệnh nhé!`;
   }
 
-  // Lệnh: /duyet hoặc /pending (Xem danh sách chờ duyệt)
-  if (lowerText === '/duyet' || lowerText === '/pending') {
-    return "ADMIN_CMD_FORWARD";
-  }
-
-  // Lệnh: /accept [ID]
-  if (lowerText.startsWith('/accept ')) {
-    const idDuyet = text.substring(8).trim();
-    return `✅ Đã phê duyệt thành công mục <b class="text-emerald-600">${escapeHtml(idDuyet)}</b> vào kho tri thức chung chính thức!`;
-  }
-
-  // Lệnh: /reject [ID]
-  if (lowerText.startsWith('/reject ')) {
-    const idTuChoi = text.substring(8).trim();
-    return `❌ Đã từ chối và loại bỏ mục <b class="text-rose-600">${escapeHtml(idTuChoi)}</b> khỏi danh sách chờ.`;
-  }
-
-  // Lệnh: /users (Quản lý người dùng)
-  if (lowerText === '/users') {
-    return `👥 <b>Danh sách phân quyền hệ thống EduOS:</b><br>
-    1. <b>Lê Duy Hải</b> - Quản trị viên trưởng (Admin) 🟢<br>
-    2. <b>Giáo viên bộ môn</b> - Người dùng cá nhân (User) 🟢<br>
-    <i>(Dữ liệu được đồng bộ từ phân quyền trên Google Sheets).</i>`;
-  }
-
-  // Lệnh: /backup (Sao lưu hệ thống)
-  if (lowerText === '/backup') {
-    return `💾 <b>Đang tạo gói sao lưu hệ thống...</b><br>
-    • Dữ liệu kho chung, kho cá nhân và cấu hình đã được đóng gói an toàn.<br>
-    <a href="#" class="inline-block mt-2 bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📥 Tải file Backup (.JSON)</a>`;
-  }
-
-  // Lệnh: /logs (Nhật ký hệ thống)
-  if (lowerText === '/logs') {
-    return `📜 <b>Nhật ký hoạt động hệ thống gần nhất:</b><br>
-    • [11:30] Admin Lê Duy Hải đăng nhập hệ thống.<br>
-    • [10:15] Cập nhật thành công 15 hồ sơ học sinh khối 10.<br>
-    • [09:00] Đồng bộ dữ liệu tự động từ Google Sheets thành công.`;
-  }
-  //Các lệnh chung
-
-  // Lệnh: /thongtin hoặc /info
+  // 3. Lệnh thông tin và thống kê
   if (lowerText === '/thongtin' || lowerText === '/info') {
     let userDisplay = currentUser ? `<b>${currentUser}</b> (${currentRole === 'admin' ? 'Quản trị viên' : 'Cá nhân'})` : 'Chưa đăng nhập (Khách)';
-    let sharedCount = learnedList.length;
-    let personalCount = personalSheetData.length;
     return `ℹ️ <b>Thông tin hệ thống EduOS:</b><br>
     • Tài khoản: ${userDisplay}<br>
-    • Kho tri thức chung: ${sharedCount} mục<br>
-    • Kho cá nhân: ${personalCount} mục<br>
+    • Kho tri thức chung: ${learnedList.length} mục<br>
+    • Kho cá nhân: ${personalSheetData.length} mục<br>
     • Trạng thái kết nối: 🟢 Trực tuyến`;
   }
 
-  // Lệnh: /thongke
   if (lowerText === '/thongke') {
     return `📊 <b>Thống kê dữ liệu hệ thống:</b><br>
     • Tổng số tri thức chung: <b>${learnedList.length}</b> câu hỏi/đáp án.<br>
@@ -645,12 +505,95 @@ async function syncToCloudWithFile(newData, newItem) {
     • Hệ thống hoạt động ổn định và đồng bộ thời gian thực với Google Sheets.`;
   }
 
-  // Lệnh: /xinchao
-  if (lowerText === '/xinchao' || lowerText === 'hi' || lowerText === 'hello') {
-    return `👋 Xin chào! Tôi là trợ lý ảo EduOS chuyên hỗ trợ quản lý hồ sơ học sinh và tra cứu thông tin. Bạn cần tôi giúp gì hôm nay? Hãy gõ <code class="text-indigo-600 font-bold">/help</code> để xem danh sách lệnh nhé!`;
+  // 4. Lệnh làm mới / đồng bộ dữ liệu
+  if (lowerText === '/lammoi' || lowerText === '/sync') {
+    if (typeof loadCloudData === 'function') {
+      loadCloudData();
+    } else if (typeof syncFromCloud === 'function') {
+      syncFromCloud();
+    }
+    return `🔄 <b>Đã đồng bộ lại dữ liệu từ Google Sheets!</b>`;
   }
 
-  // Lệnh: /thongbao
+  // 5. Lệnh quản lý tri thức (/quanly, /xoatoanbo, /xoa, /tim, /day)
+  if (lowerText === '/quanly' || lowerText === '/ql') {
+    openQAManager();
+    return `🗂️ <b>Đã mở bảng quản lý trực quan!</b>`;
+  }
+
+  if (lowerText === '/xoatoanbo') {
+    syncToCloud([]);
+    return `🗑️ <b>Đã xóa sạch toàn bộ kho tri thức chung!</b>`;
+  }
+
+
+  if (lowerText.startsWith('/xoa ')) {
+    const keyword = text.substring(5).trim().toLowerCase();
+    if (!keyword) return `⚠️ Vui lòng nhập cụm từ cần xóa (VD: <code class="text-indigo-600">/xoa [từ]</code>)`;
+    
+    let beforeCount = learnedList.length;
+    let filteredList = learnedList.filter(item => {
+      let qVal = item.q || item.Q || "";
+      let aVal = item.a || item.A || "";
+      return !qVal.toLowerCase().includes(keyword) && !aVal.toLowerCase().includes(keyword);
+    });
+    let deletedCount = beforeCount - filteredList.length;
+
+    if (deletedCount === 0) return `🔍 Không tìm thấy mục nào chứa "<b>${escapeHtml(keyword)}</b>".`;
+    syncToCloud(filteredList);
+    return `🗑️ <b>Đã xóa thành công ${deletedCount} mục</b> chứa từ "<b>${escapeHtml(keyword)}</b>"!`;
+  }
+
+  if (lowerText.startsWith('/tim ')) {
+    const keyword = text.substring(5).trim().toLowerCase();
+    if (!keyword) return `⚠️ Vui lòng nhập từ khóa cần tìm!`;
+    
+    let results = learnedList.filter(item => {
+      let qVal = item.q || item.Q || "";
+      let aVal = item.a || item.A || "";
+      return qVal.toLowerCase().includes(keyword) || aVal.toLowerCase().includes(keyword);
+    });
+    if (results.length === 0) return `🔍 Không tìm thấy kết quả cho "<b>${escapeHtml(keyword)}</b>".`;
+
+    let resHtml = `🔍 <b>Tìm thấy ${results.length} kết quả:</b><div class="mt-2 space-y-1.5 max-h-48 overflow-y-auto">`;
+    results.forEach((item, idx) => {
+      let qVal = item.q || item.Q || "";
+      let aVal = item.a || item.A || "";
+      resHtml += `
+        <div class="bg-indigo-50 p-2 rounded-xl text-xs space-y-0.5 border border-indigo-100">
+          <p class="font-bold text-indigo-700">${idx + 1}. Q: ${escapeHtml(qVal)}</p>
+          <p class="text-slate-600">A: ${escapeHtml(aVal)}</p>
+        </div>
+      `;
+    });
+    resHtml += `</div>`;
+    return resHtml;
+  }
+
+  if (lowerText.startsWith('/day ')) {
+    if (!currentUser) {
+      return `⚠️ Bạn cần <b class="text-rose-600">đăng nhập</b> tài khoản mới có quyền dạy AI!`;
+    }
+
+    let content = text.substring(5).trim();
+    const parts = content.split('|');
+    if (parts.length === 2) {
+      const q = parts[0].trim().toLowerCase();
+      const a = parts[1].trim();
+
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "teach", username: currentUser, q, a })
+      });
+
+      personalSheetData.push({ Q: q, A: a, FileName: "", FileUrl: "" });
+      return `✅ <b>Đã học thành công!</b> Đã lưu vào kho riêng và gửi yêu cầu kiểm duyệt lên hệ thống chính.`;
+    } else {
+      return `⚠️ Sai cú pháp! Dùng: <code class="text-indigo-600">/day câu hỏi | câu trả lời</code>`;
+    }
+  }
+
+  // 6. Nhóm tiện ích nhà trường & học sinh (/thongbao, /lich, /thoikhoabieu, /diem)
   if (lowerText === '/thongbao') {
     return `📢 <b>Thông báo mới từ nhà trường:</b><br>
     1. Triển khai cập nhật hồ sơ học sinh khối 10 năm học mới.<br>
@@ -658,7 +601,6 @@ async function syncToCloudWithFile(newData, newItem) {
     3. Nhớ sử dụng lệnh <code class="text-indigo-600">/day</code> để cập nhật thêm các quy chế mới vào kho tri thức chung.`;
   }
 
-  // Lệnh: /lich hoặc /thoikhoabieu
   if (lowerText === '/lich' || lowerText === '/thoikhoabieu') {
     return `📅 <b>Lịch công tác / Thời khóa biểu:</b><br>
     • Sáng thứ Hai: Chào cờ đầu tuần và họp hội đồng giáo viên.<br>
@@ -666,76 +608,106 @@ async function syncToCloudWithFile(newData, newItem) {
     • Thầy/Cô có thể tra cứu thêm chi tiết lịch cụ thể bằng cách nhập từ khóa qua lệnh <code class="text-indigo-600">/tim [từ_khóa]</code>.`;
   }
 
-  // Lệnh: /diem [mã_hs] (Mẫu mô phỏng tra cứu)
   if (lowerText.startsWith('/diem ')) {
     const maHS = text.substring(6).trim();
     if (!maHS) return `⚠️ Vui lòng nhập mã học sinh (VD: <code class="text-indigo-600">/diem HS123</code>)`;
-    // Thầy có thể mở rộng kết nối dữ liệu điểm số thực tế từ Google Sheets tại đây
     return `🔍 Đang tra cứu thông tin hồ sơ/điểm số cho mã học sinh: <b>${escapeHtml(maHS)}</b>.<br><i>(Tính năng kết nối bảng điểm chi tiết đang được đồng bộ theo dữ liệu quản lý của trường).</i>`;
   }
 
-      // --- TRỢ LÝ TRA CỨU KÉP CHÍNH XÁC HƠN ---
-if (currentUser && personalSheetData.length > 0) {
-  let foundPersonal = personalSheetData.find(item => {
-    let qVal = (item.q || item.Q || "").toLowerCase().trim();
-    return qVal && (lowerText === qVal || lowerText.includes(qVal));
-  });
-  if (foundPersonal) {
-    let aVal = foundPersonal.a || foundPersonal.A || "";
-    return `<div class="text-[10px] bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-bold mb-1 inline-block">🔒 Kho tri thức cá nhân</div><p>${aVal}</p>`;
-  }
-}
-
-// Kiểm tra kho chung (Ưu tiên khớp chính xác trước)
-let foundShared = learnedList.find(item => {
-  let qVal = (item.q || item.Q || "").toLowerCase().trim();
-  return qVal && lowerText === qVal;
-});
-
-// Nếu không khớp chính xác, tìm theo từ khóa chứa bên trong nhưng có điều kiện lọc
-if (!foundShared) {
-  foundShared = learnedList.find(item => {
-    let qVal = (item.q || item.Q || "").toLowerCase().trim();
-    // Đảm bảo qVal phải có độ dài tương đối để tránh khớp nhầm từ quá ngắn
-    return qVal && qVal.length > 3 && lowerText.includes(qVal);
-  });
-}
-
-if (foundShared) {
-  let aVal = foundShared.a || foundShared.A || "";
-  let fileUrl = foundShared.fileUrl || foundShared.FileUrl || "";
-  let fileName = foundShared.fileName || foundShared.FileName || "";
-
-  let responseHTML = `<div class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold mb-1 inline-block">🌐 Kho tri thức chung</div><p>${aVal}</p>`;
-  if (fileUrl && fileName) {
-    responseHTML += `
-      <div class="mt-3 bg-white border border-indigo-100 rounded-2xl p-3 flex items-center justify-between shadow-sm">
-        <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-file-lines"></i>
-          </div>
-          <div class="truncate">
-            <p class="font-bold text-xs text-slate-800 truncate">${fileName}</p>
-            <p class="text-[10px] text-slate-400">Tài liệu đính kèm</p>
-          </div>
-        </div>
-        <a href="${fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
-          <i class="fa-solid fa-download"></i> Tải về
-        </a>
-      </div>
-    `;
-  }
-  return responseHTML;
-}
-
-      // Nếu không tìm thấy, ghi vết thiếu vào cột E Sheet 1
-      fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "log_missing", missingQuery: text })
-      });
-
-      return `Hmm, hệ thống chưa có dữ liệu về vấn đề này. Câu hỏi của bạn đã được ghi lại để Quản trị viên tham khảo bổ sung! Gõ <code class="text-indigo-600">/help</code> để xem hướng dẫn.`;
+  // 7. Nhóm lệnh Quản trị viên (Admin)
+  const adminCommands = ['/duyet', '/pending', '/accept', '/reject', '/users', '/backup', '/logs'];
+  if (adminCommands.some(cmd => lowerText.startsWith(cmd))) {
+    if (!currentUser || currentRole !== 'admin') {
+      return `⛔ <b>Từ chối truy cập:</b> Lệnh này yêu cầu quyền <b>Quản trị viên (Admin)</b>. Vui lòng đăng nhập bằng tài khoản Admin để sử dụng.`;
     }
+
+    if (lowerText === '/duyet' || lowerText === '/pending') {
+      return "ADMIN_CMD_FORWARD";
+    }
+    if (lowerText.startsWith('/accept ')) {
+      const idDuyet = text.substring(8).trim();
+      return `✅ Đã phê duyệt thành công mục <b class="text-emerald-600">${escapeHtml(idDuyet)}</b> vào kho tri thức chung chính thức!`;
+    }
+    if (lowerText.startsWith('/reject ')) {
+      const idTuChoi = text.substring(8).trim();
+      return `❌ Đã từ chối và loại bỏ mục <b class="text-rose-600">${escapeHtml(idTuChoi)}</b> khỏi danh sách chờ.`;
+    }
+    if (lowerText === '/users') {
+      return `👥 <b>Danh sách phân quyền hệ thống EduOS:</b><br>
+      1. <b>Lê Duy Hải</b> - Quản trị viên trưởng (Admin) 🟢<br>
+      2. <b>Giáo viên bộ môn</b> - Người dùng cá nhân (User) 🟢<br>
+      <i>(Dữ liệu được đồng bộ từ phân quyền trên Google Sheets).</i>`;
+    }
+    if (lowerText === '/backup') {
+      return `💾 <b>Đang tạo gói sao lưu hệ thống...</b><br>
+      • Dữ liệu kho chung, kho cá nhân và cấu hình đã được đóng gói an toàn.<br>
+      <a href="#" class="inline-block mt-2 bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📥 Tải file Backup (.JSON)</a>`;
+    }
+    if (lowerText === '/logs') {
+      return `📜 <b>Nhật ký hoạt động hệ thống gần nhất:</b><br>
+      • Đồng bộ dữ liệu tự động từ Google Sheets thành công.`;
+    }
+  }
+
+  // 8. Trợ lý tra cứu kép (Kho cá nhân & Kho chung)
+  if (currentUser && personalSheetData.length > 0) {
+    let foundPersonal = personalSheetData.find(item => {
+      let qVal = (item.q || item.Q || "").toLowerCase().trim();
+      return qVal && (lowerText === qVal || lowerText.includes(qVal));
+    });
+    if (foundPersonal) {
+      let aVal = foundPersonal.a || foundPersonal.A || "";
+      return `<div class="text-[10px] bg-sky-50 text-sky-700 px-2 py-0.5 rounded font-bold mb-1 inline-block">🔒 Kho tri thức cá nhân</div><p>${escapeHtml(aVal)}</p>`;
+    }
+  }
+
+  let foundShared = learnedList.find(item => {
+    let qVal = (item.q || item.Q || "").toLowerCase().trim();
+    return qVal && lowerText === qVal;
+  });
+
+  if (!foundShared) {
+    foundShared = learnedList.find(item => {
+      let qVal = (item.q || item.Q || "").toLowerCase().trim();
+      return qVal && qVal.length > 3 && lowerText.includes(qVal);
+    });
+  }
+
+  if (foundShared) {
+    let aVal = foundShared.a || foundShared.A || "";
+    let fileUrl = foundShared.fileUrl || foundShared.FileUrl || "";
+    let fileName = foundShared.fileName || foundShared.FileName || "";
+
+    let responseHTML = `<div class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold mb-1 inline-block">🌐 Kho tri thức chung</div><p>${escapeHtml(aVal)}</p>`;
+    if (fileUrl && fileName) {
+      responseHTML += `
+        <div class="mt-3 bg-white border border-indigo-100 rounded-2xl p-3 flex items-center justify-between shadow-sm">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-file-lines"></i>
+            </div>
+            <div class="truncate">
+              <p class="font-bold text-xs text-slate-800 truncate">${escapeHtml(fileName)}</p>
+              <p class="text-[10px] text-slate-400">Tài liệu đính kèm</p>
+            </div>
+          </div>
+          <a href="${fileUrl}" target="_blank" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 shrink-0">
+            <i class="fa-solid fa-download"></i> Tải về
+          </a>
+        </div>
+      `;
+    }
+    return responseHTML;
+  }
+
+  // 9. Ghi vết câu hỏi thiếu nếu không tìm thấy
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "log_missing", missingQuery: text })
+  });
+
+  return `Hmm, hệ thống chưa có dữ liệu về vấn đề này. Câu hỏi của bạn đã được ghi lại để Quản trị viên tham khảo bổ sung! Gõ <code class="text-indigo-600">/help</code> để xem hướng dẫn.`;
+}
 
     async function executeUserCommand() {
       const input = document.getElementById('cmdInput');
@@ -757,9 +729,23 @@ if (foundShared) {
       input.value = '';
       msgContainer.scrollTop = msgContainer.scrollHeight;
 
-      // 1. Kiểm tra nếu là lệnh quản trị/duyệt cần gọi trực tiếp Google Apps Script
-      const lowerText = text.toLowerCase();
-      if (lowerText.startsWith("/duyet") || lowerText.startsWith("/pending") || lowerText.startsWith("/duyet_tt") || lowerText.startsWith("/xoa_tt") || lowerText.startsWith("/ds_")) {
+      
+     // 1. Kiểm tra nếu là lệnh quản trị/duyệt cần gọi trực tiếp Google Apps Script
+    const lowerText = text.toLowerCase();
+    if (
+      lowerText.startsWith("/duyet") || 
+      lowerText.startsWith("/pending") || 
+      lowerText.startsWith("/ds_tt") || 
+      lowerText.startsWith("/duyet_tt") || 
+      lowerText.startsWith("/xoa_tt") || 
+      lowerText.startsWith("/ds_tk") ||
+      lowerText.startsWith("/khoa_tk") ||
+      lowerText.startsWith("/khoa") ||
+      lowerText.startsWith("/mokhoa") ||
+      lowerText.startsWith("/logs") ||
+      
+      lowerText.startsWith("/users")
+    ) {
         
         // Hiển thị trạng thái đang tải
         const loadId = "load_" + Date.now();
