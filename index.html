@@ -452,7 +452,7 @@ async function syncToCloudWithFile(newData, newItem) {
       // Lệnh: /help
   // Lệnh: /help (Đã bao gồm nhóm lệnh Admin)
   if (lowerText === '/help' || lowerText === '/giupdo') {
-    let helpHTML = `🤖 <b>HƯỚNG DẪN HỆ THỐNG LỆNH EDUOS</b><br><br>
+    let helpHTML = `🤖 <b>HƯỚNG DẪN HỆ THỐNG LỆNH KIENORAAI</b><br><br>
     <b>1. Hệ thống & Trợ giúp:</b><br>
     • <code class="text-indigo-600 font-bold">/help</code> - Xem danh sách toàn bộ lệnh.<br>
     • <code class="text-indigo-600 font-bold">/lammoi</code> / <code class="text-indigo-600 font-bold">/sync</code> - Đồng bộ dữ liệu từ Google Sheets.<br>
@@ -603,7 +603,7 @@ async function syncToCloudWithFile(newData, newItem) {
 
   // Lệnh: /users (Quản lý người dùng)
   if (lowerText === '/users') {
-    return `👥 <b>Danh sách phân quyền hệ thống EduOS:</b><br>
+    return `👥 <b>Danh sách phân quyền hệ thống KienoraAI:</b><br>
     1. <b>Lê Duy Hải</b> - Quản trị viên trưởng (Admin) 🟢<br>
     2. <b>Giáo viên bộ môn</b> - Người dùng cá nhân (User) 🟢<br>
     <i>(Dữ liệu được đồng bộ từ phân quyền trên Google Sheets).</i>`;
@@ -630,7 +630,7 @@ async function syncToCloudWithFile(newData, newItem) {
     let userDisplay = currentUser ? `<b>${currentUser}</b> (${currentRole === 'admin' ? 'Quản trị viên' : 'Cá nhân'})` : 'Chưa đăng nhập (Khách)';
     let sharedCount = learnedList.length;
     let personalCount = personalSheetData.length;
-    return `ℹ️ <b>Thông tin hệ thống EduOS:</b><br>
+    return `ℹ️ <b>Thông tin hệ thống KienoraAI:</b><br>
     • Tài khoản: ${userDisplay}<br>
     • Kho tri thức chung: ${sharedCount} mục<br>
     • Kho cá nhân: ${personalCount} mục<br>
@@ -647,14 +647,14 @@ async function syncToCloudWithFile(newData, newItem) {
 
   // Lệnh: /xinchao
   if (lowerText === '/xinchao' || lowerText === 'hi' || lowerText === 'hello') {
-    return `👋 Xin chào! Tôi là trợ lý ảo EduOS chuyên hỗ trợ quản lý hồ sơ học sinh và tra cứu thông tin. Bạn cần tôi giúp gì hôm nay? Hãy gõ <code class="text-indigo-600 font-bold">/help</code> để xem danh sách lệnh nhé!`;
+    return `👋 Xin chào! Tôi là trợ lý ảo KienoraAI chuyên hỗ trợ quản lý hồ sơ học sinh và tra cứu thông tin. Bạn cần tôi giúp gì hôm nay? Hãy gõ <code class="text-indigo-600 font-bold">/help</code> để xem danh sách lệnh nhé!`;
   }
 
   // Lệnh: /thongbao
   if (lowerText === '/thongbao') {
     return `📢 <b>Thông báo mới từ nhà trường:</b><br>
     1. Triển khai cập nhật hồ sơ học sinh khối 10 năm học mới.<br>
-    2. Giáo viên chủ nhiệm kiểm tra lại danh sách học sinh trên hệ thống EduOS trước ngày cuối tuần.<br>
+    2. Giáo viên chủ nhiệm kiểm tra lại danh sách học sinh trên hệ thống KienoraAI trước ngày cuối tuần.<br>
     3. Nhớ sử dụng lệnh <code class="text-indigo-600">/day</code> để cập nhật thêm các quy chế mới vào kho tri thức chung.`;
   }
 
